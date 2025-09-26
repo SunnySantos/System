@@ -1,18 +1,28 @@
 @extends('layouts.base')
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
 <style>
-    .test {
-        color: gray;
+    .icon {
+        width: 3rem;
+    }
+
+    .item {
+        width: 100%;
     }
 </style>
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+
 <script>
+    const api = 'http://localhost:8000/api';
+
     websiteTheme();
     dataTableCheckbox();
     bulkDeleteForm();
+    geoDropdowns();
 
     function websiteTheme() {
         // Restore theme from localStorage
@@ -41,7 +51,9 @@
             const allCheckboxes = dataTable.querySelectorAll('tbody .checkbox');
 
             selectAllCheckboxes.addEventListener('click', (e) => {
-                allCheckboxes.forEach(checkbox => checkbox.checked = e.target.checked);
+                const isChecked = e.target.checked;
+                e.target.checked = !isChecked;
+                allCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
             });
 
             // Event delegation: handle individual checkbox changes
@@ -71,6 +83,115 @@
                 }
             });
         }
+    }
+
+
+    function geoDropdowns() {
+        let countrySelect = new TomSelect('#country', {
+            valueField: 'id',
+            labelField: 'name',
+            searchField: 'name',
+            preload: true,
+            load: async function(query, callback) {
+                try {
+                    const response = await fetch(`${api}/countries`);
+                    const data = await response.json();
+                    callback(data);
+                } catch (e) {
+                    callback();
+                }
+            },
+            render: {
+                option: (item, escape) => `<div>${escape(item.name)}</div>`,
+                item: (item, escape) => `<div>${escape(item.name)}</div>`
+            },
+            onLoad: function() {
+                const oldValue = this.input.dataset.value;
+                if (oldValue) {
+                    this.setValue(oldValue);
+                    this.input.removeAttribute('data-value');
+                }
+            }
+        });
+
+
+        // State select (depends on country)
+        let stateSelect = new TomSelect("#state", {
+            valueField: "id",
+            labelField: "name",
+            searchField: "name",
+            load: function(query, callback) {
+                let countryId = countrySelect.getValue();
+                if (!countryId.length) return callback();
+
+                fetch(`/api/states/${countryId}`)
+                    .then(response => response.json())
+                    .then(data => callback(data))
+                    .catch(() => callback());
+            },
+            render: {
+                option: function(item, escape) {
+                    return `<div>${item.name}</div>`;
+                },
+                item: function(item, escape) {
+                    return `<div>${item.name}</div>`;
+                }
+            },
+            onLoad: function() {
+                const oldValue = this.input.dataset.value;
+                if (oldValue) {
+                    this.setValue(oldValue);
+                    this.input.removeAttribute('data-value');
+                }
+            }
+        });
+
+        // City select (depends on state)
+        let citySelect = new TomSelect("#city", {
+            valueField: "id",
+            labelField: "name",
+            searchField: "name",
+            load: function(query, callback) {
+                let stateId = stateSelect.getValue();
+                if (!stateId.length) return callback();
+
+                fetch(`/api/cities/${stateId}`)
+                    .then(response => response.json())
+                    .then(data => callback(data))
+                    .catch(() => callback());
+            },
+            render: {
+                option: function(item, escape) {
+                    return `<div>${item.name}</div>`;
+                },
+                item: function(item, escape) {
+                    return `<div>${item.name}</div>`;
+                }
+            },
+            onLoad: function() {
+                const oldValue = this.input.dataset.value;
+                if (oldValue) {
+                    this.setValue(oldValue);
+                    this.input.removeAttribute('data-value');
+                }
+            }
+        });
+
+        // Reload states when country changes
+        countrySelect.on("change", function() {
+            stateSelect.clear(); // Clear old state selection
+            stateSelect.clearOptions(); // Remove old options
+            stateSelect.load(stateSelect.settings.load); // Reload states
+            citySelect.clear();
+            citySelect.clearOptions();
+        });
+
+        // Reload cities when state changes
+        stateSelect.on("change", function() {
+            citySelect.clear();
+            citySelect.clearOptions();
+            citySelect.load(citySelect.settings.load);
+        });
     }
 </script>
 @endpush

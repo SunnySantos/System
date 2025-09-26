@@ -6,12 +6,20 @@ use App\Http\Requests\User\BulkDeleteUserRequest;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function index(Request $request): View
     {
         $users = User::search($request)->paginate(5)->withQueryString();
@@ -33,13 +41,18 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => bcrypt($request->input('password')),
-        ]);
+        try {
+            $this->userService->createWithProfile($request->validated());
 
-        return redirect()->route('users.index')->with('success', 'User created successfully!');
+            return redirect()
+                ->route('users.index')
+                ->with('success', 'User created successfully!');
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create user. Please try again later.']);
+        }
     }
 
     public function edit(User $user): View
