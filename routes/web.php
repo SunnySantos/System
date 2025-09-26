@@ -14,5 +14,5 @@ Route::get('/', function () {
 
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-Route::get('/users/friends', [UserController::class, 'friends'])->name('users.friends');
+Route::delete('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
 Route::resource('users', UserController::class);

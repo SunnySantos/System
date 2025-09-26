@@ -10,25 +10,24 @@
 <x-alert type="success" message="{{ session('success') }}" />
 @endif
 
-<a href="{{ route('users.create') }}" class="btn btn-soft btn-primary mb-4">Add New</a>
+<a href="{{ route('users.create') }}" class="btn btn-soft btn-primary mb-4">
+    <x-lucide-user-plus />
+    Add New
+</a>
 
-<div class="flex justify-end">
-    <form action="{{ route('users.index') }}" method="GET" class="block ms-auto">
-        <label class="input">
-            <x-lucide-search />
-            <input type="search" name="search" id="search" value="{{ request('search') }}" placeholder="Search" />
-        </label>
-    </form>
+<div class="flex">
+    <x-bulk-delete-form singular="user" plural="users" route="users.bulk-delete" />
+    <x-table-search />
 </div>
 
 <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 my-4">
-    <table class="table">
+    <table class="table" id="data_table">
         <!-- head -->
         <thead>
             <tr>
                 <th>
                     <label>
-                        <input type="checkbox" class="checkbox" />
+                        <input type="checkbox" class="checkbox" id="select_all_checkboxes" />
                     </label>
                 </th>
                 <th>
@@ -43,11 +42,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($users as $user)
+            @forelse ($users as $user)
             <tr>
                 <th>
                     <label>
-                        <input type="checkbox" class="checkbox" />
+                        <input type="checkbox" class="checkbox" name="id[]" value="{{ $user->id }}" />
                     </label>
                 </th>
                 <td>
@@ -87,21 +86,21 @@
                     </div>
                 </th>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="5" class="text-center">No users</td>
+            </tr>
+            @endforelse
         </tbody>
         <!-- foot -->
         <tfoot>
             <tr>
                 <th></th>
                 <th>
-                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}">
-                        Name
-                    </a>
+                    <x-sortable-column column="name" label="Name" />
                 </th>
                 <th>
-                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'email', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}">
-                        Email
-                    </a>
+                    <x-sortable-column column="email" label="Email" />
                 </th>
                 <th>Role</th>
                 <th>Status</th>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\BulkDeleteUserRequest;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
@@ -69,10 +70,14 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User deleted successfully!');
     }
 
-    public function friends(): View
+    public function bulkDelete(BulkDeleteUserRequest $request): RedirectResponse
     {
-        $users = User::all();
+        $ids = explode(',', $request->ids);
+        $singular = 'user';
+        $plural = 'users';
 
-        return view('users.friends', compact('users'));
+        User::whereIn('id', $ids)->delete();
+
+        return back()->with('success', 'Selected ' . (sizeof($ids) > 1 ? $plural : $singular) . ' deleted successfully!');
     }
 }
