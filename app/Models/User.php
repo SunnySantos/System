@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -52,8 +53,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function profile()
+    /**
+     * A User has one UserProfile.
+     *
+     * @return BelongsTo
+     */
+    public function profile(): HasOne
     {
-        // return $this->hasOne(UserProfile::class, '')
+        return $this->hasOne(UserProfile::class);
     }
 }

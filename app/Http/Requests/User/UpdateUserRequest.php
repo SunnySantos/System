@@ -23,9 +23,49 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'first_name'        => ['required', 'string', 'max:255'],
+            'middle_name'       => ['nullable', 'string', 'max:255'],
+            'last_name'         => ['required', 'string', 'max:255'],
+            'phone'             => ['nullable', 'string', 'min:5', 'max:20', 'regex:/^[0-9*#+()\- ]+$/'],
+            'street_address'    => ['required', 'string', 'max:255'],
+            'country'           => [
+                'required',
+                'int',
+                Rule::exists('countries', 'id'),
+            ],
+            'city'              => [
+                'required',
+                'int',
+                Rule::exists('cities', 'id')->where(function ($query) {
+                    $query->where('state_id', $this->input('state'));
+                }),
+            ],
+            'state'             => [
+                'required',
+                'int',
+                Rule::exists('states', 'id')->where(function ($query) {
+                    $query->where('country_id', $this->input('country'));
+                }),
+            ],
+            'zip'               => ['required', 'string', 'max:255'],
+            'email'             => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user->id)],
+            'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
+            'file_base_name'    => ['nullable', 'string', 'max:255'],
+            'file_extension'    => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'country.required'  => 'Please select a country.',
+            'country.exists'    => 'The selected country does not exist.',
+
+            'state.required'    => 'Please select a state.',
+            'state.exists'      => 'The selected state is invalid or does not belong to the chosen country.',
+
+            'city.required'     => 'Please select a city.',
+            'city.exists'       => 'The selected city is invalid or does not belong to the chosen state.',
         ];
     }
 }

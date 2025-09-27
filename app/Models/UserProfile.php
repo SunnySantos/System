@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserProfile extends Model
 {
@@ -28,4 +29,14 @@ class UserProfile extends Model
         'file_base_name',
         'file_extension',
     ];
+
+    /**
+     * A UserProfile belongs to a User.
+     *
+     * @return BelongsTo
+     */
+    public function profile(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

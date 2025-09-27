@@ -42,4 +42,44 @@ class UserService
             return $user;
         });
     }
+
+    public function updateWithProfile(array $data, User $user): User
+    {
+        return DB::transaction(function () use ($data, $user) {
+            // Update User
+            $user->name = $data['first_name'] . ' ' . $data['last_name'];
+            $user->email = $data['email'];
+
+            if (!empty($data['password'])) {
+                $user->password = bcrypt($data['password']);
+            }
+
+            $user->save();
+
+            // Update UserProfile
+            $cityName    = City::where('id', $data['city'])->value('name');
+            $stateName   = State::where('id', $data['state'])->value('name');
+            $countryName = Country::where('id', $data['country'])->value('name');
+
+            // Update or create related profile
+            $user->profile()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'first_name'     => $data['first_name'],
+                    'middle_name'    => $data['middle_name'] ?? null,
+                    'last_name'      => $data['last_name'],
+                    'phone'          => $data['phone'] ?? null,
+                    'street_address' => $data['street_address'],
+                    'city'           => $cityName,
+                    'state'          => $stateName,
+                    'zip'            => $data['zip'],
+                    'country'        => $countryName,
+                    'file_base_name' => $data['file_base_name'] ?? null,
+                    'file_extension' => $data['file_extension'] ?? null,
+                ]
+            );
+
+            return $user;
+        });
+    }
 }

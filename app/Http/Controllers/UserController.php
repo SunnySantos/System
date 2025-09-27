@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\User\BulkDeleteUserRequest;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\State;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +32,7 @@ class UserController extends Controller
 
     public function show(int $id): View
     {
-        $user = User::findOrFail($id);
+        $user = User::with('profile')->findOrFail($id);
 
         return view('users.show', compact('user'));
     }
@@ -51,29 +54,45 @@ class UserController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create user. Please try again later.']);
+                ->withErrors(['error' => 'Unable to create user. Please try again.']);
         }
     }
 
     public function edit(User $user): View
     {
-        return view('users.edit', compact('user'));
+        $countryId = null;
+        $stateId = null;
+        $cityId = null;
+
+        if ($user->profile && $user->profile->country) {
+            $countryId = Country::where('name', $user->profile->country)->value('id');
+        }
+
+        if ($user->profile && $user->profile->state) {
+            $stateId = State::where('name', $user->profile->state)->value('id');
+        }
+
+        if ($user->profile && $user->profile->city) {
+            $cityId = City::where('name', $user->profile->city)->value('id');
+        }
+
+        return view('users.edit', compact('user', 'countryId', 'stateId', 'cityId'));
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $this->userService->updateWithProfile($request->validated(), $user);
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
-
-        if (!empty($validated['password'])) {
-            $user->password = bcrypt($validated['password']);
+            return redirect()
+                ->route('users.index')
+                ->with('success', 'User updated successfully!');
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['error' => 'Unable to update user. Please try again.']);
         }
-
-        $user->save();
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
 
     public function destroy(User $user): RedirectResponse
