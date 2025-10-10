@@ -47,11 +47,9 @@ class StoreUserRequest extends FormRequest
                     $query->where('country_id', $this->input('country'));
                 }),
             ],
-            'zip'               => ['required', 'string', 'max:255'],
+            'zip'               => ['required', 'string', 'max:20'],
             'email'             => ['required', 'email', 'unique:users,email'],
             'password'          => ['required', 'string', 'min:8', 'confirmed'],
-            'file_base_name'    => ['nullable', 'string', 'max:255'],
-            'file_extension'    => ['nullable', 'string', 'max:255'],
         ];
     }
 

@@ -2,6 +2,7 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 <style>
     .icon {
         width: 3rem;
@@ -10,11 +11,46 @@
     .item {
         width: 100%;
     }
+
+
+    [data-theme="dark"] .ts-control,
+    [data-theme="dark"] .ts-wrapper.single.input-active .ts-control,
+    [data-theme="dark"] .ts-dropdown {
+        background-color: var(--color-base-100);
+    }
+
+    [data-theme="dark"] .ts-dropdown,
+    [data-theme="dark"] .ts-control>input {
+        color: var(--color-base-content);
+    }
+
+    [data-theme="dark"] .ts-dropdown .active {
+        background-color: var(--color-base-200);
+        color: var(--color-base-content);
+    }
+
+    .ts-dropdown,
+    .ts-control,
+    .ts-control input {
+        color: var(--color-base-content);
+        font-size: 0.875rem;
+        line-height: inherit;
+    }
+
+    .ts-control {
+        padding-inline: calc(0.25rem * 3);
+        border-radius: var(--radius-field);
+    }
+
+    #profile_edit {
+        translate: var(--indicator-x, 50%) var(--indicator-y, -50%);
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 
 <script>
     const api = 'http://localhost:8000/api';
@@ -87,6 +123,8 @@
 
 
     function geoDropdowns() {
+        if (document.querySelectorAll('#country, #state, #city').length !== 3) return;
+
         let countrySelect = new TomSelect('#country', {
             valueField: 'id',
             labelField: 'name',
@@ -103,15 +141,11 @@
             },
             render: {
                 option: (item, escape) => `<div>${escape(item.name)}</div>`,
-                item: (item, escape) => `<div>${escape(item.name)}</div>`
+                item: (item, escape) => {
+                    document.getElementById('country_name').value = item.name;
+                    return `<div>${escape(item.name)}</div>`;
+                },
             },
-            onLoad: function() {
-                const oldValue = this.input.dataset.value;
-                if (oldValue) {
-                    this.setValue(oldValue);
-                    this.input.removeAttribute('data-value');
-                }
-            }
         });
 
 
@@ -130,20 +164,12 @@
                     .catch(() => callback());
             },
             render: {
-                option: function(item, escape) {
-                    return `<div>${item.name}</div>`;
-                },
-                item: function(item, escape) {
+                option: (item, escape) => `<div>${item.name}</div>`,
+                item: (item, escape) => {
+                    document.getElementById('state_name').value = item.name;
                     return `<div>${item.name}</div>`;
                 }
             },
-            onLoad: function() {
-                const oldValue = this.input.dataset.value;
-                if (oldValue) {
-                    this.setValue(oldValue);
-                    this.input.removeAttribute('data-value');
-                }
-            }
         });
 
         // City select (depends on state)
@@ -161,20 +187,12 @@
                     .catch(() => callback());
             },
             render: {
-                option: function(item, escape) {
-                    return `<div>${item.name}</div>`;
-                },
-                item: function(item, escape) {
+                option: (item, escape) => `<div>${item.name}</div>`,
+                item: (item, escape) => {
+                    document.getElementById('city_name').value = item.name;
                     return `<div>${item.name}</div>`;
                 }
             },
-            onLoad: function() {
-                const oldValue = this.input.dataset.value;
-                if (oldValue) {
-                    this.setValue(oldValue);
-                    this.input.removeAttribute('data-value');
-                }
-            }
         });
 
         // Reload states when country changes
@@ -191,6 +209,27 @@
             citySelect.clear();
             citySelect.clearOptions();
             citySelect.load(citySelect.settings.load);
+        });
+    }
+
+
+    const profileEditButton = document.getElementById('profile_edit');
+    const profileInput = document.getElementById('profile')
+    if (profileEditButton && profileInput) {
+        profileEditButton.addEventListener('click', function() {
+            profileInput.click();
+        });
+
+        profileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile_picture').src = e.target.result;
+                }
+                reader.readAsDataURL(file)
+            }
         });
     }
 </script>

@@ -35,8 +35,6 @@ class UserService
                 'state'             => $stateName,
                 'zip'               => $data['zip'],
                 'country'           => $countryName,
-                'file_base_name'    => $data['file_base_name'] ?? null,
-                'file_extension'    => $data['file_extension'] ?? null,
             ]);
 
             return $user;
@@ -61,22 +59,27 @@ class UserService
             $stateName   = State::where('id', $data['state'])->value('name');
             $countryName = Country::where('id', $data['country'])->value('name');
 
+            $newData = [
+                'first_name'     => $data['first_name'],
+                'middle_name'    => $data['middle_name'] ?? null,
+                'last_name'      => $data['last_name'],
+                'phone'          => $data['phone'] ?? null,
+                'street_address' => $data['street_address'],
+                'city'           => $cityName,
+                'state'          => $stateName,
+                'zip'            => $data['zip'],
+                'country'        => $countryName,
+            ];
+
+            if (isset($data['file_base_name']) && isset($data['file_extension'])) {
+                $newData['file_base_name'] = $data['file_base_name'];
+                $newData['file_extension'] = $data['file_extension'];
+            }
+
             // Update or create related profile
             $user->profile()->updateOrCreate(
                 ['user_id' => $user->id],
-                [
-                    'first_name'     => $data['first_name'],
-                    'middle_name'    => $data['middle_name'] ?? null,
-                    'last_name'      => $data['last_name'],
-                    'phone'          => $data['phone'] ?? null,
-                    'street_address' => $data['street_address'],
-                    'city'           => $cityName,
-                    'state'          => $stateName,
-                    'zip'            => $data['zip'],
-                    'country'        => $countryName,
-                    'file_base_name' => $data['file_base_name'] ?? null,
-                    'file_extension' => $data['file_extension'] ?? null,
-                ]
+                $newData
             );
 
             return $user;

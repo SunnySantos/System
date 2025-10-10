@@ -60,29 +60,40 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
-        $countryId = null;
-        $stateId = null;
-        $cityId = null;
+        $country = null;
+        $state = null;
+        $city = null;
 
         if ($user->profile && $user->profile->country) {
-            $countryId = Country::where('name', $user->profile->country)->value('id');
+            $country = Country::where('name', $user->profile->country)->first(['id', 'name']);
         }
 
         if ($user->profile && $user->profile->state) {
-            $stateId = State::where('name', $user->profile->state)->value('id');
+            $state = State::where('name', $user->profile->state)->first(['id', 'name']);
         }
 
         if ($user->profile && $user->profile->city) {
-            $cityId = City::where('name', $user->profile->city)->value('id');
+            $city = City::where('name', $user->profile->city)->first(['id', 'name']);
         }
 
-        return view('users.edit', compact('user', 'countryId', 'stateId', 'cityId'));
+        return view('users.edit', compact('user', 'country', 'state', 'city'));
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         try {
-            $this->userService->updateWithProfile($request->validated(), $user);
+            $validated = $request->validated();
+
+            if ($request->hasFile('profile')) {
+                $file = $request->file('profile');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('profile_pictures', $filename, 'public');
+
+                $validated['file_base_name'] = pathinfo($filename, PATHINFO_FILENAME);
+                $validated['file_extension'] = '.' . pathinfo($filename, PATHINFO_EXTENSION);
+            }
+
+            $this->userService->updateWithProfile($validated, $user);
 
             return redirect()
                 ->route('users.index')
@@ -91,7 +102,7 @@ class UserController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->withErrors(['error' => 'Unable to update user. Please try again.']);
+                ->withErrors(['error' => 'Unable to update user. Please try again.' . $e->getMessage()]);
         }
     }
 

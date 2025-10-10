@@ -30,6 +30,11 @@ class UserProfile extends Model
         'file_extension',
     ];
 
+    protected $attributes = [
+        'file_base_name' => 'default_avatar',
+        'file_extension' => '.jpg',
+    ];
+
     /**
      * A UserProfile belongs to a User.
      *

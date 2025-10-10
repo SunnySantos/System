@@ -47,11 +47,16 @@ class UpdateUserRequest extends FormRequest
                     $query->where('country_id', $this->input('country'));
                 }),
             ],
-            'zip'               => ['required', 'string', 'max:255'],
+            'zip'               => ['required', 'string', 'max:20'],
             'email'             => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user->id)],
             'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
-            'file_base_name'    => ['nullable', 'string', 'max:255'],
-            'file_extension'    => ['nullable', 'string', 'max:255'],
+            'profile'           => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,jfif',
+                'max:2048',
+                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000'
+            ]
         ];
     }
 
@@ -66,6 +71,11 @@ class UpdateUserRequest extends FormRequest
 
             'city.required'     => 'Please select a city.',
             'city.exists'       => 'The selected city is invalid or does not belong to the chosen state.',
+
+            'profile.image' => 'The profile picture must be an image file.',
+            'profile.mimes' => 'Only JPG and PNG images are allowed.',
+            'profile.max'   => 'The profile picture may not be larger than 2MB.',
+            'profile.dimensions' => 'The image dimensions must be between 100x100 and 2000x2000 pixels.',
         ];
     }
 }

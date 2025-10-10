@@ -20,7 +20,7 @@
     </div>
 
     <div class="flex gap-4">
-        <a href="{{ route('users.edit', $user) }}" class="btn btn-soft btn-primary mb-4"><x-lucide-user-pen /> Update</a>
+        <a href="{{ route('users.edit', $user) }}" class="btn btn-soft btn-primary mb-4"><x-lucide-user-pen /> Edit</a>
         <form action="{{ route('users.destroy', $user->id) }}" method="POST"
             onsubmit="return confirm('Are you sure you want to delete this user?');">
             @csrf

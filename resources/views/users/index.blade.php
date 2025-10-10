@@ -54,7 +54,7 @@
                         <div class="avatar">
                             <div class="mask mask-squircle h-12 w-12">
                                 <img
-                                    src="{{ asset('storage/profile_pictures/default_avatar.jpg') }}"
+                                    src="{{ asset('storage/profile_pictures/' . $user->profile->file_base_name . $user->profile->file_extension) }}"
                                     alt="{{ $user->name }} Avatar" />
                             </div>
                         </div>

@@ -27,9 +27,9 @@
 
         @stack('styles')
     </head>
-    <body class="flex min-h-screen">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
+    <body class="min-h-screen">
+        <!-- <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
+            @if (Route::has('login.index'))
                 <nav class="flex items-center justify-end gap-4">
                     @auth
                         <a
@@ -40,7 +40,7 @@
                         </a>
                     @else
                         <a
-                            href="{{ route('login') }}"
+                            href="{{ route('login.index') }}"
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
                         >
                             Log in
@@ -56,59 +56,10 @@
                     @endauth
                 </nav>
             @endif
-        </header>
+        </header> -->
 
-
-        <div class="drawer lg:drawer-open">
-            <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
-
-            <!-- Main content -->
-            <div class="drawer-content flex flex-col p-6 bg-base-100 dark:bg-base-200">
-                <!-- Top bar with menu button (only on mobile) -->
-                <div class="flex items-center mb-4">
-                    <label for="sidebar-drawer" class="lg:hidden me-4">
-                        <!-- Hamburger icon -->
-                        <x-lucide-menu />
-                    </label>
-
-                    {{-- Page Title --}}
-                    <h1 class="text-xl font-bold">@yield('page_title')</h1>
-
-                    
-
-                    <!-- Dark mode toggle -->
-                    <label class="swap swap-rotate ms-auto">
-                        <input type="checkbox" id="theme_controller" class="theme-controller" value="dark" />
-                        <!-- sun -->
-                        <x-lucide-sun class="swap-off fill-current" />
-
-                        <!-- moon -->
-                        <x-lucide-moon class="swap-on fill-current" />
-                    </label>
-
-                    @auth
-                        <span class="ms-4 text-sm text-gray-500 dark:text-gray-400">Hello, {{ Auth::user()->name }}</span>
-                    @endauth
-                </div>
-
-                
-
-                {{-- Main Content --}}
-                <div>
-                    @yield('content')
-                </div>
-            </div>
-
-            {{-- Sidebar --}}
-            <div class="drawer-side">
-                <label for="sidebar-drawer" class="drawer-overlay"></label>
-                <x-sidebar />
-            </div>
-        </div>
-
-        @if (Route::has('login'))
-            <div class="h-14.5 hidden lg:block"></div>
-        @endif
+        {{-- Main Content --}}
+        @yield('content')
 
         @stack('scripts')
     </body>
