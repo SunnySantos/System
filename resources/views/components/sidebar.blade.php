@@ -5,7 +5,7 @@
     <ul class="menu menu-vertical p-0 w-full grow">
         <li><a href="{{ route('dashboard.index') }}"><x-lucide-layout-dashboard /> Dashboard</a></li>
         <li><a href="{{ route('users.index') }}"><x-lucide-users-round /> Users</a></li>
-        <li><a href="#"><x-lucide-settings /> Settings</a></li>
+        <li><a href="{{ route('settings.index') }}"><x-lucide-settings /> Settings</a></li>
         <li class="mt-auto">
             <a href="#" onclick='event.preventDefault(); document.getElementById("logout_form").submit();'><x-lucide-log-out /> Logout</a>
             <form action="{{ route('logout') }}" method="POST" class="hidden" id="logout_form">
