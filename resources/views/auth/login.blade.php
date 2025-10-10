@@ -13,7 +13,7 @@
 
                 <div class="mb-4">
                     <label class="label block w-fit" for="email">Email</label>
-                    <input type="email" id="email" name="email" class="input w-full" value="{{ old('email') }}" placeholder="Email" autocomplete="true">
+                    <input type="email" id="email" name="email" class="input w-full" value="{{ old('email') }}" placeholder="Email">
                     @error('email')
                     <div class="text-red-500 dark:text-red-400">{{ $message }}</div>
                     @endif
@@ -29,7 +29,7 @@
 
                 <div class="mb-6 flex items-center justify-between">
                     <div>
-                        <input type="checkbox" id="remember" name="remember" class="checkbox checkbox-sm me-2">
+                        <input type="checkbox" id="remember" name="remember" class="checkbox checkbox-sm me-2 mb-1">
                         <label for="remember" class="cursor-pointer select-none">Remember me</label>
                     </div>
                     <a class="link link-hover">Forgot password?</a>

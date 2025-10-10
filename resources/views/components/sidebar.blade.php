@@ -7,10 +7,11 @@
         <li><a href="{{ route('users.index') }}"><x-lucide-users-round /> Users</a></li>
         <li><a href="#"><x-lucide-settings /> Settings</a></li>
         <li class="mt-auto">
-            <form action="{{ route('logout') }}" method="POST">
+            <a href="#" onclick='event.preventDefault(); document.getElementById("logout_form").submit();'><x-lucide-log-out /> Logout</a>
+            <form action="{{ route('logout') }}" method="POST" class="hidden" id="logout_form">
                 @csrf
                 <button type="submit" class="cursor-pointer">
-                    <x-lucide-log-out class="inline-block me-1 mb-1" /> <span>Logout</span>
+                    Logout
                 </button>
             </form>
         </li>
