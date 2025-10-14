@@ -38,7 +38,7 @@ class UserProfile extends Model
     /**
      * A UserProfile belongs to a User.
      *
-     * @return BelongsTo
+     * @return BelongsTo<User>
      */
     public function profile(): BelongsTo
     {

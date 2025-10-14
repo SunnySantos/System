@@ -36,7 +36,7 @@ class State extends Model
     /**
      * A State has many Cities.
      *
-     * @return HasMany
+     * @return HasMany<City>
      */
     public function cities(): HasMany
     {

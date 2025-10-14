@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Requests\User;
+namespace App\Http\Requests\Role;
 
+use App\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class BulkDeleteUserRequest extends FormRequest
+class StoreRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +23,13 @@ class BulkDeleteUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Cache the authenticated routes for 1 hour to avoid re-processing
+        $authenticatedRoutes = Role::getAuthenticatedRoutes();
+
         return [
-            'ids' => ['required', 'string'],
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'role_accesses' => ['nullable', 'array'],
+            'role_accesses.*' => ['string', 'max:255', 'in:' . implode(',', $authenticatedRoutes)],
         ];
     }
 }

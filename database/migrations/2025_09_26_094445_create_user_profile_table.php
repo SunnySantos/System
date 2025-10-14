@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('state');
             $table->string('zip');
             $table->string('country');
-            $table->string('file_base_name');
-            $table->string('file_extension');
+            // $table->string('file_base_name')->default('default_avatar');
+            // $table->string('file_extension')->default('.jpg');
             $table->timestamps();
         });
     }

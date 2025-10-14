@@ -3,6 +3,7 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
@@ -12,7 +13,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Temporary value. Make it false after login feature is implemented
+        return Auth::check();
     }
 
     /**
@@ -50,6 +51,7 @@ class StoreUserRequest extends FormRequest
             'zip'               => ['required', 'string', 'max:20'],
             'email'             => ['required', 'email', 'unique:users,email'],
             'password'          => ['required', 'string', 'min:8', 'confirmed'],
+            'role'              => ['required', 'exists:roles,id'],
         ];
     }
 

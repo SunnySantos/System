@@ -8,9 +8,9 @@
         width: 3rem;
     }
 
-    .item {
+    /* .item {
         width: 100%;
-    }
+    } */
 
 
     [data-theme="dark"] .ts-control,
@@ -80,17 +80,15 @@
     function dataTableCheckbox() {
         const dataTable = document.getElementById('data_table');
         const selectAllCheckboxes = document.getElementById('select_all_checkboxes');
+        const selectAllCheckboxesFooter = document.getElementById('select_all_checkboxes_footer');
         const deleteSelectedIdBtn = document.getElementById('delete_selected_id_btn');
         const selectedIds = document.getElementById('selected_ids');
 
-        if (selectAllCheckboxes && dataTable && deleteSelectedIdBtn && selectedIds) {
+        if (selectAllCheckboxes && selectAllCheckboxesFooter && dataTable && deleteSelectedIdBtn && selectedIds) {
             const allCheckboxes = dataTable.querySelectorAll('tbody .checkbox');
 
-            selectAllCheckboxes.addEventListener('click', (e) => {
-                const isChecked = e.target.checked;
-                e.target.checked = !isChecked;
-                allCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
-            });
+            selectAllCheckboxes.addEventListener('click', onSelectAllCheckboxes);
+            selectAllCheckboxesFooter.addEventListener('click', onSelectAllCheckboxes);
 
             // Event delegation: handle individual checkbox changes
             dataTable.addEventListener('change', (e) => {
@@ -98,10 +96,23 @@
                 if (cb.classList.contains('checkbox')) {
                     const checkedBoxes = dataTable.querySelectorAll('tbody .checkbox:checked');
                     selectAllCheckboxes.checked = checkedBoxes.length === allCheckboxes.length;
+                    selectAllCheckboxesFooter.checked = checkedBoxes.length === allCheckboxes.length;
                     deleteSelectedIdBtn.disabled = checkedBoxes.length === 0;
                     selectedIds.value = Array.from(checkedBoxes).map(c => c.value).join(',');
                 }
             });
+
+            function onSelectAllCheckboxes(e) {
+                const isChecked = e.target.checked;
+                e.target.checked = !isChecked;
+                if (e.target == selectAllCheckboxes) {
+                    selectAllCheckboxesFooter.checked = isChecked;
+                } else {
+                    selectAllCheckboxes.checked = isChecked;
+                }
+
+                allCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
+            }
         }
     }
 
@@ -232,5 +243,10 @@
             }
         });
     }
+
+    // Initialize TomSelect
+    document.querySelectorAll('.tom-select').forEach(select => {
+        new TomSelect(select);
+    })
 </script>
 @endpush

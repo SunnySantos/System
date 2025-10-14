@@ -25,7 +25,7 @@ class Country extends Model
     /**
      * A Country has many States.
      *
-     * @return HasMany
+     * @return HasMany<State>
      */
     public function states(): HasMany
     {

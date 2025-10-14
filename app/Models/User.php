@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id'
     ];
 
     /**
@@ -56,10 +58,44 @@ class User extends Authenticatable
     /**
      * A User has one UserProfile.
      *
-     * @return BelongsTo
+     * @return BelongsTo<UserProfile>
      */
     public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class);
+    }
+
+    /**
+     * A User belongs to a Role.
+     *
+     * @return BelongsTo<Role>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if the user has access to a specific route.
+     * 
+     * @param string $routeName
+     * @return bool
+     */
+    public function canAccess(string $routeName): bool
+    {
+        static $cachedAccesses = [];
+
+        $roleId = $this->role_id;
+
+        if (!isset($cachedAccesses[$roleId])) {
+            $cachedAccesses[$roleId] = $this->role
+                ? $this->role->accesses()
+                ->where('can_access', true)
+                ->pluck('route_name')
+                ->toArray()
+                : [];
+        }
+
+        return in_array($routeName, $cachedAccesses[$roleId]);
     }
 }

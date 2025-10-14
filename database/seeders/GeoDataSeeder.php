@@ -15,7 +15,7 @@ class GeoDataSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         // Define the path to your single JSON file
         // geo_data.json is countries+states+cities.json in https://github.com/dr5hn/countries-states-cities-database

@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class City extends Model
+class RoleAccess extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<\Database\Factories\RoleAccessFactory> */
     use HasFactory;
 
     /**
@@ -17,17 +17,18 @@ class City extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'state_id',
-        'name',
+        'role_id',
+        'route_name',
+        'can_access',
     ];
 
     /**
-     * A City belongs to a State.
+     * A RoleAccess belongs to a Role.
      *
-     * @return BelongsTo<State>
+     * @return belongsTo<Role>
      */
-    public function state(): BelongsTo
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(Role::class);
     }
 }

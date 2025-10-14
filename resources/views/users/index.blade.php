@@ -25,11 +25,13 @@
         <!-- head -->
         <thead>
             <tr>
-                <th>
+                @if (Auth::user()->canAccess('users.destroy'))
+                <th width="50px">
                     <label>
                         <input type="checkbox" class="checkbox" id="select_all_checkboxes" />
                     </label>
                 </th>
+                @endif
                 <th>
                     <x-sortable-column column="name" label="Name" />
                 </th>
@@ -38,7 +40,9 @@
                 </th>
                 <th>Role</th>
                 <th>Status</th>
-                <th></th>
+                @if (Auth::user()->canAccess('users.show') || Auth::user()->canAccess('users.destroy'))
+                <th>Action</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -54,7 +58,7 @@
                         <div class="avatar">
                             <div class="mask mask-squircle h-12 w-12">
                                 <img
-                                    src="{{ asset('storage/profile_pictures/' . $user->profile->file_base_name . $user->profile->file_extension) }}"
+                                    src="{{ asset('storage/profile_pictures/' . $user->file_base_name . $user->file_extension) }}"
                                     alt="{{ $user->name }} Avatar" />
                             </div>
                         </div>
@@ -64,16 +68,25 @@
                     </div>
                 </td>
                 <td>{{ $user->email }}</td>
-                <td>Administrator</td>
+                <td>
+                    <a href="{{ route('roles.show', $user->role_id) }}">
+                        {{ $user->role->name ?? '' }}
+                    </a>
+                </td>
                 <td>
                     <span class="badge badge-soft badge-success">Active</span>
                 </td>
+                @if (Auth::user()->canAccess('users.show') || Auth::user()->canAccess('users.destroy'))
                 <th>
+                    @if (Auth::user()->canAccess('users.show'))
                     <div class="tooltip tooltip-bottom" data-tip="View">
                         <a href="{{ route('users.show', $user->id) }}" class="text-[#297AFF]">
                             <x-lucide-eye />
                         </a>
                     </div>
+                    @endif
+
+                    @if (Auth::user()->canAccess('users.destroy'))
                     <div class="tooltip tooltip-bottom" data-tip="Delete">
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST"
                             onsubmit="return confirm('Are you sure you want to delete this user?');">
@@ -84,7 +97,9 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                 </th>
+                @endif
             </tr>
             @empty
             <tr>
@@ -95,7 +110,13 @@
         <!-- foot -->
         <tfoot>
             <tr>
-                <th></th>
+                @if (Auth::user()->canAccess('users.destroy'))
+                <th width="50px">
+                    <label>
+                        <input type="checkbox" class="checkbox" id="select_all_checkboxes_footer" />
+                    </label>
+                </th>
+                @endif
                 <th>
                     <x-sortable-column column="name" label="Name" />
                 </th>

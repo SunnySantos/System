@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\User;
+namespace App\Http\Requests\Role;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class BulkDeleteUserRequest extends FormRequest
+class BulkDeleteRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,7 @@ class BulkDeleteUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids' => ['required', 'string'],
+            //
         ];
     }
 }

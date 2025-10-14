@@ -18,6 +18,7 @@ class UserService
                 'name'      => $data['first_name'] . ' ' . $data['last_name'],
                 'email'     => $data['email'],
                 'password'  => bcrypt($data['password']),
+                'role_id'   => $data['role'],
             ]);
 
             $cityName    = City::where('id', $data['city'])->value('name');
@@ -47,9 +48,15 @@ class UserService
             // Update User
             $user->name = $data['first_name'] . ' ' . $data['last_name'];
             $user->email = $data['email'];
+            $user->role_id = $data['role'];
 
             if (!empty($data['password'])) {
                 $user->password = bcrypt($data['password']);
+            }
+
+            if (isset($data['file_base_name']) && isset($data['file_extension'])) {
+                $user->file_base_name = $data['file_base_name'];
+                $user->file_extension = $data['file_extension'];
             }
 
             $user->save();
@@ -59,27 +66,20 @@ class UserService
             $stateName   = State::where('id', $data['state'])->value('name');
             $countryName = Country::where('id', $data['country'])->value('name');
 
-            $newData = [
-                'first_name'     => $data['first_name'],
-                'middle_name'    => $data['middle_name'] ?? null,
-                'last_name'      => $data['last_name'],
-                'phone'          => $data['phone'] ?? null,
-                'street_address' => $data['street_address'],
-                'city'           => $cityName,
-                'state'          => $stateName,
-                'zip'            => $data['zip'],
-                'country'        => $countryName,
-            ];
-
-            if (isset($data['file_base_name']) && isset($data['file_extension'])) {
-                $newData['file_base_name'] = $data['file_base_name'];
-                $newData['file_extension'] = $data['file_extension'];
-            }
-
             // Update or create related profile
             $user->profile()->updateOrCreate(
                 ['user_id' => $user->id],
-                $newData
+                [
+                    'first_name'     => $data['first_name'],
+                    'middle_name'    => $data['middle_name'] ?? null,
+                    'last_name'      => $data['last_name'],
+                    'phone'          => $data['phone'] ?? null,
+                    'street_address' => $data['street_address'],
+                    'city'           => $cityName,
+                    'state'          => $stateName,
+                    'zip'            => $data['zip'],
+                    'country'        => $countryName,
+                ]
             );
 
             return $user;

@@ -24,6 +24,11 @@ trait Searchable
             });
         }
 
+        // Role
+        if ($role = $request->get('role')) {
+            $query->where('role_id', '=', $role);
+        }
+
         // Sort
         $sort = $request->get('sort', 'id');
         $direction = $request->get('direction', 'desc');

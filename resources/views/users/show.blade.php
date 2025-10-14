@@ -6,6 +6,10 @@
 
 @section('content')
 
+@if (session('success'))
+<x-alert type="success" message="{{ session('success') }}" />
+@endif
+
 <div class="flex items-center justify-between">
     <div class="flex gap-4 items-center">
         <div class="avatar">
@@ -15,7 +19,7 @@
         </div>
         <div>
             <div class="font-bold">{{ $user->name }}</div>
-            <div class="text-sm opacity-50">Administrator</div>
+            <div class="text-sm opacity-50">{{ $user->role->name ?? '' }}</div>
         </div>
     </div>
 

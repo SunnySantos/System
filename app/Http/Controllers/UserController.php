@@ -96,7 +96,7 @@ class UserController extends Controller
             $this->userService->updateWithProfile($validated, $user);
 
             return redirect()
-                ->route('users.index')
+                ->route('users.show', $user->id)
                 ->with('success', 'User updated successfully!');
         } catch (\Throwable $e) {
             return redirect()

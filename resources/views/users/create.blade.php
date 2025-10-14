@@ -130,6 +130,19 @@
         @endif
     </div>
 
+    <div class="mb-4">
+        <label class="label block w-fit" for="role">Role <span class="text-red-500">*</span></label>
+        <select class="w-full tom-select" id="role" name="role" autocomplete="off">
+            <option value="">Select Role</option>
+            @foreach(App\Models\Role::all() as $role)
+            <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+            @endforeach
+        </select>
+        @error('role')
+        <div class="text-red-500 dark:text-red-400">{{ $message }}</div>
+        @endif
+    </div>
+
     <button type="submit" class="btn btn-soft btn-primary"><x-lucide-plus /> Create User</button>
 </form>
 @endsection
