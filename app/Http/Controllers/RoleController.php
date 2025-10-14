@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Role\BulkDeleteRoleRequest;
 use App\Http\Requests\Role\StoreRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
+use App\Http\Requests\Role\UpdateUserRoleAfterDeleteRequest;
 use App\Models\Role;
 use App\Models\RoleAccess;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -95,7 +97,10 @@ class RoleController extends Controller
         foreach ($selectedRoutes as $route) {
             [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
 
-            if ($action == 'create') {
+            if ($module == 'settings' && $action == 'index') {
+                array_push($selectedRoutes, 'password.confirm');
+                array_push($authenticatedRoutes, 'password.confirm');
+            } elseif ($action == 'create') {
                 array_push($selectedRoutes, $module . '.store');
                 array_push($authenticatedRoutes, $module . '.store');
             } elseif ($action == 'edit') {
@@ -104,6 +109,11 @@ class RoleController extends Controller
             } elseif ($action == 'destroy') {
                 array_push($selectedRoutes, $module . '.bulk-delete');
                 array_push($authenticatedRoutes, $module . '.bulk-delete');
+
+                if ($module == 'roles') {
+                    array_push($selectedRoutes, $module . '.update-user-role');
+                    array_push($authenticatedRoutes, $module . '.update-user-role');
+                }
             }
         }
 
@@ -178,7 +188,10 @@ class RoleController extends Controller
         foreach ($selectedRoutes as $route) {
             [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
 
-            if ($action == 'create') {
+            if ($module == 'settings' && $action == 'index') {
+                array_push($selectedRoutes, 'password.confirm');
+                array_push($authenticatedRoutes, 'password.confirm');
+            } elseif ($action == 'create') {
                 array_push($selectedRoutes, $module . '.store');
                 array_push($authenticatedRoutes, $module . '.store');
             } elseif ($action == 'edit') {
@@ -187,10 +200,13 @@ class RoleController extends Controller
             } elseif ($action == 'destroy') {
                 array_push($selectedRoutes, $module . '.bulk-delete');
                 array_push($authenticatedRoutes, $module . '.bulk-delete');
+
+                if ($module == 'roles') {
+                    array_push($selectedRoutes, $module . '.update-user-role');
+                    array_push($authenticatedRoutes, $module . '.update-user-role');
+                }
             }
         }
-
-        Log::debug('Authenticated Routes: ' . print_r($selectedRoutes, true));
 
         $selectedRoutes = array_unique($selectedRoutes);
         $authenticatedRoutes = array_unique($authenticatedRoutes);
@@ -234,12 +250,8 @@ class RoleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Role $role)
+    public function destroy(Role $role): RedirectResponse
     {
-        if ($role->users_count > 0) {
-            return redirect()->route('roles.index')->with('error', 'This role is currently assigned to one or more users and cannot be deleted.');
-        }
-
         $role->delete();
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully!');
@@ -255,5 +267,26 @@ class RoleController extends Controller
         Role::whereIn('id', $ids)->delete();
 
         return back()->with('success', 'Selected ' . (sizeof($ids) > 1 ? $plural : $singular) . ' deleted successfully!');
+    }
+
+    public function updateUserRoleAfterDelete(UpdateUserRoleAfterDeleteRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $oldRoleId = $validated['role_id'];
+        $newRoleId = $validated['new_role_id'];
+
+        DB::transaction(function () use ($oldRoleId, $newRoleId) {
+            // Reassign all users with the old role
+            User::where('role_id', $oldRoleId)->update([
+                'role_id' => $newRoleId,
+            ]);
+
+            // Delete the old role
+            Role::where('id', $oldRoleId)->delete();
+        });
+
+
+        return redirect()->route('roles.index')->with('success', 'Role deleted and users reassigned successfully.');
     }
 }

@@ -248,5 +248,29 @@
     document.querySelectorAll('.tom-select').forEach(select => {
         new TomSelect(select);
     })
+
+
+    const deleteRoleModal = document.getElementById('delete_role_modal');
+
+    if (deleteRoleModal) {
+        if(deleteRoleModal.querySelector('.error')) {
+            deleteRoleModal.showModal();
+        }
+
+        document.querySelectorAll('.delete-modal-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const {
+                    roleId
+                } = btn.dataset;
+
+                const roleIdInput = document.getElementById('role_id');
+
+                if (roleIdInput) {
+                    roleIdInput.value = roleId;
+                    deleteRoleModal.showModal();
+                }
+            })
+        })
+    }
 </script>
 @endpush

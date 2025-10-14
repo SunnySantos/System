@@ -10,13 +10,17 @@
 <x-alert type="success" message="{{ session('success') }}" />
 @endif
 
+@if (Auth::user()->canAccess('users.create'))
 <a href="{{ route('users.create') }}" class="btn btn-soft btn-primary mb-4">
     <x-lucide-user-plus />
     Add New
 </a>
+@endif
 
 <div class="flex">
+    @if (Auth::user()->canAccess('users.destroy'))
     <x-bulk-delete-form singular="user" plural="users" route="users.bulk-delete" />
+    @endif
     <x-table-search />
 </div>
 
@@ -48,11 +52,13 @@
         <tbody>
             @forelse ($users as $user)
             <tr>
+                @if (Auth::user()->canAccess('users.destroy'))
                 <th>
                     <label>
                         <input type="checkbox" class="checkbox" name="id[]" value="{{ $user->id }}" />
                     </label>
                 </th>
+                @endif
                 <td>
                     <div class="flex items-center gap-3">
                         <div class="avatar">

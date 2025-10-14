@@ -75,9 +75,14 @@
                     </div>
                     @endif
                     @if (Auth::user()->canAccess('roles.destroy'))
+                    @if ($role->users_count > 0)
+                    <div class="tooltip tooltip-bottom" data-tip="Delete">
+                        <button class="cursor-pointer text-red-500 delete-modal-btn" data-role-id="{{ $role->id }}"><x-lucide-trash /></button>
+                    </div>
+                    @else
                     <div class="tooltip tooltip-bottom" data-tip="Delete">
                         <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            onsubmit="return confirm('Are you sure you want to delete this role?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="cursor-pointer text-red-500">
@@ -85,6 +90,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                     @endif
                 </th>
                 @endif
@@ -120,4 +126,42 @@
 </div>
 
 {{ $roles->links() }}
+
+<dialog id="delete_role_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="text-lg font-bold">Reassign Users Before Deleting Role</h3>
+        <div class="modal-action block">
+            <p class="mb-4">This role is currently assigned to users. Please select a new role for them before deleting it.</p>
+            <form action="{{ route('roles.update-user-role') }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this role?');">
+                @csrf
+                @method('DELETE')
+
+                <input type="hidden" id="role_id" name="role_id" value="">
+
+                <div class="mb-4">
+                    <label class="label block w-fit" for="role">Role <span class="text-red-500">*</span></label>
+                    <select class="w-full tom-select" id="new_role_id" name="new_role_id" autocomplete="off">
+                        <option value="">Select Role</option>
+                        @foreach(App\Models\Role::all() as $_role)
+                        <option value="{{ $_role->id }}">{{ $_role->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('new_role_id')
+                    <div class="text-red-500 dark:text-red-400 error">{{ $message }}</div>
+                    @endif
+                </div>
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-soft btn-error">
+                        <x-lucide-trash />
+                        Delete
+                    </button>
+                    <button type="button" class="btn" onclick="delete_role_modal.close()">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</dialog>
+
 @endsection
