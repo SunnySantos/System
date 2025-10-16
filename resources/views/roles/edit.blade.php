@@ -33,11 +33,11 @@
                 {{ $module }} Module
             </div>
             <ul class="list-none mb-4 flex gap-4 flex-wrap">
-                @foreach ($authenticatedRoutes as $route => $details)
-                    @if ($details['module'] === $module)
+                @foreach ($authenticatedRoutes as $route => $value)
+                    @if ($value['module'] === $module && array_key_exists($value['action'], App\Models\Role::ROUTE_ACTIONS))
                         <li>
-                            <input type="checkbox" class="checkbox checkbox-sm mr-2" id="{{ str_replace('.', '_', $route) }}" name="role_accesses[]" value="{{ $route }}" {{ $details['can_access'] ? 'checked' : '' }} />
-                            <label for="{{ str_replace('.', '_', $route) }}">{{ $details['label'] }}</label>
+                            <input type="checkbox" class="checkbox checkbox-sm mr-2" id="{{ str_replace('.', '_', $route) }}" name="role_accesses[]" value="{{ $route }}" {{ $value['can_access'] ? 'checked' : '' }} />
+                            <label for="{{ str_replace('.', '_', $route) }}">{{ $value['label'] }}</label>
                         </li>
                     @endif
                 @endforeach

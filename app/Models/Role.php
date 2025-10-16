@@ -22,6 +22,7 @@ class Role extends Model
         'edit' => 'Edit',
         'destroy' => 'Delete',
     ];
+    public const SUPER_ADMIN_ID = 1;
 
     /**
      * The attributes that are mass assignable.
@@ -72,21 +73,30 @@ class Role extends Model
         // Cache per role to avoid re-processing every time
         $cacheKey = "role_{$this->id}_accessed_routes";
 
-        // return Cache::remember($cacheKey, 3600, function () {
-        return collect(static::getAuthenticatedRoutes())
-            ->mapWithKeys(function ($route) {
-                [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
+        return Cache::remember($cacheKey, 3600, function () {
+            return collect(static::getAuthenticatedRoutes())
+                ->mapWithKeys(function ($route) {
+                    [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
 
-                return [
-                    $route => [
-                        'label' => sprintf('%s %s', static::ROUTE_ACTIONS[$action] ?? ucfirst($action), ucfirst($module)),
-                        'module' => $module,
-                        'action' => $action,
-                        'can_access' => in_array($route, $this->accessRouteNames(), true),
-                    ],
-                ];
-            })
-            ->toArray();
-        // });
+                    return [
+                        $route => [
+                            'label' => sprintf('%s %s', static::ROUTE_ACTIONS[$action] ?? ucfirst($action), ucfirst($module)),
+                            'module' => $module,
+                            'action' => $action,
+                            'can_access' => in_array($route, $this->accessRouteNames(), true),
+                        ],
+                    ];
+                })
+                ->toArray();
+        });
+    }
+
+    public static function clearAuthenticatedRoutesCache(): void
+    {
+        foreach (Role::all() as $role) {
+            Cache::forget("role_{$role->id}_accessed_routes");
+        }
+
+        Cache::forget('authenticated_routes_' . md5(json_encode(static::MODULES)));
     }
 }

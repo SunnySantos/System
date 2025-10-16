@@ -23,35 +23,36 @@ trait HasAuthenticatedRoutes
         // Create a unique cache key based on modules list
         $cacheKey = 'authenticated_routes_' . md5(json_encode($modules));
 
-        // return Cache::remember($cacheKey, $ttl, function () use ($modules) {
-        return collect(Route::getRoutes())
-            ->filter(fn($route) => in_array('auth', $route->gatherMiddleware()))
-            ->map(function ($route) use ($modules) {
-                $name = $route->getName();
+        return Cache::remember($cacheKey, $ttl, function () use ($modules) {
+            return collect(Route::getRoutes())
+                ->filter(fn($route) => in_array('auth', $route->gatherMiddleware()))
+                ->map(function ($route) use ($modules) {
+                    $name = $route->getName();
 
-                if (!$name) {
-                    return null; // Skip unnamed routes
-                }
+                    if (!$name) {
+                        return null; // Skip unnamed routes
+                    }
 
-                $parts = explode('.', $name, 2);
-                $module = $parts[0] ?? null;
-                $action = $parts[1] ?? null;
+                    $parts = explode('.', $name, 2);
+                    $module = $parts[0] ?? null;
+                    $action = $parts[1] ?? null;
 
-                // Validate module and action
-                if (!in_array($module, $modules, true)) {
-                    return null;
-                }
+                    // Validate module and action
+                    if (!in_array($module, $modules, true)) {
+                        return null;
+                    }
 
-                if (!array_key_exists($action, Role::ROUTE_ACTIONS)) {
-                    return null;
-                }
+                    // if (!array_key_exists($action, Role::ROUTE_ACTIONS)) {
+                    //     return null;
+                    // }
 
-                return $name;
-            })
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-        // });
+                    return $name;
+                })
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+        });
     }
 }

@@ -7,15 +7,14 @@ use App\Http\Requests\Role\StoreRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Http\Requests\Role\UpdateUserRoleAfterDeleteRequest;
 use App\Models\Role;
-use App\Models\RoleAccess;
 use App\Models\User;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\View;
 
 class RoleController extends Controller
 {
@@ -27,10 +26,10 @@ class RoleController extends Controller
         $user = Auth::user();
         $roleId = $user->role_id;
 
-        if ($roleId == 1) {
+        if ($roleId == Role::SUPER_ADMIN_ID) {
             $roles = Role::search($request)->withCount('users')->paginate(5)->withQueryString();
         } else {
-            $roles = Role::search($request)->where('id', '!=', 1)->withCount('users')->paginate(5)->withQueryString();
+            $roles = Role::search($request)->where('id', '!=', Role::SUPER_ADMIN_ID)->withCount('users')->paginate(5)->withQueryString();
         }
 
         return view('roles.index', compact('roles', 'request'));
@@ -88,52 +87,20 @@ class RoleController extends Controller
             'name' => $validated['name'],
         ]);
 
-        // Get all authenticated routes
-        $authenticatedRoutes = Role::getAuthenticatedRoutes();
-
-        // Get selected routes from form (checked checkboxes)
-        $selectedRoutes = $validated['role_accesses'] ?? [];
-
-        foreach ($selectedRoutes as $route) {
-            [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
-
-            if ($module == 'settings' && $action == 'index') {
-                array_push($selectedRoutes, 'password.confirm');
-                array_push($authenticatedRoutes, 'password.confirm');
-            } elseif ($action == 'create') {
-                array_push($selectedRoutes, $module . '.store');
-                array_push($authenticatedRoutes, $module . '.store');
-            } elseif ($action == 'edit') {
-                array_push($selectedRoutes, $module . '.update');
-                array_push($authenticatedRoutes, $module . '.update');
-            } elseif ($action == 'destroy') {
-                array_push($selectedRoutes, $module . '.bulk-delete');
-                array_push($authenticatedRoutes, $module . '.bulk-delete');
-
-                if ($module == 'roles') {
-                    array_push($selectedRoutes, $module . '.update-user-role');
-                    array_push($authenticatedRoutes, $module . '.update-user-role');
-                }
-            }
-        }
-
-        $selectedRoutes = array_unique($selectedRoutes);
-        $authenticatedRoutes = array_unique($authenticatedRoutes);
-
-        // Prepare accesses
-        $roleAccesses = collect($authenticatedRoutes)->map(function ($route) use ($selectedRoutes) {
-            return [
-                'route_name' => $route,
-                'can_access' => in_array($route, $selectedRoutes, true),
-            ];
-        });
+        /* 
+        *   Get selected routes from form (checked checkboxes)
+        *   Get all authenticated routes
+        */
+        [$selectedRoutes, $authenticatedRoutes] = $this->expandRouteRelations($validated['role_accesses'] ?? [], Role::getAuthenticatedRoutes());
 
         // Bulk insert for efficiency
         $role->accesses()->createMany(
-            $roleAccesses->map(fn($access) => [
-                'route_name' => $access['route_name'],
-                'can_access' => $access['can_access'],
-            ])->toArray()
+            collect($authenticatedRoutes)->map(function ($route) use ($selectedRoutes) {
+                return [
+                    'route_name' => $route,
+                    'can_access' => in_array($route, $selectedRoutes, true),
+                ];
+            })->toArray()
         );
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully!');
@@ -179,37 +146,11 @@ class RoleController extends Controller
             'name' => $validated['name'],
         ]);
 
-        // Get all authenticated routes
-        $authenticatedRoutes = Role::getAuthenticatedRoutes();
-
-        // Get selected routes from form (checked checkboxes)
-        $selectedRoutes = $validated['role_accesses'] ?? [];
-
-        foreach ($selectedRoutes as $route) {
-            [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
-
-            if ($module == 'settings' && $action == 'index') {
-                array_push($selectedRoutes, 'password.confirm');
-                array_push($authenticatedRoutes, 'password.confirm');
-            } elseif ($action == 'create') {
-                array_push($selectedRoutes, $module . '.store');
-                array_push($authenticatedRoutes, $module . '.store');
-            } elseif ($action == 'edit') {
-                array_push($selectedRoutes, $module . '.update');
-                array_push($authenticatedRoutes, $module . '.update');
-            } elseif ($action == 'destroy') {
-                array_push($selectedRoutes, $module . '.bulk-delete');
-                array_push($authenticatedRoutes, $module . '.bulk-delete');
-
-                if ($module == 'roles') {
-                    array_push($selectedRoutes, $module . '.update-user-role');
-                    array_push($authenticatedRoutes, $module . '.update-user-role');
-                }
-            }
-        }
-
-        $selectedRoutes = array_unique($selectedRoutes);
-        $authenticatedRoutes = array_unique($authenticatedRoutes);
+        /* 
+        *   Get selected routes from form (checked checkboxes)
+        *   Get all authenticated routes
+        */
+        [$selectedRoutes, $authenticatedRoutes] = $this->expandRouteRelations($validated['role_accesses'] ?? [], Role::getAuthenticatedRoutes());
 
         // Get existing accesses from database
         $existingAccesses = $role->accesses()->pluck('can_access', 'route_name');
@@ -241,6 +182,8 @@ class RoleController extends Controller
             if ($toDelete->isNotEmpty()) {
                 $role->accesses()->whereIn('route_name', $toDelete)->delete();
             }
+
+            Role::clearAuthenticatedRoutesCache();
         });
 
 
@@ -288,5 +231,30 @@ class RoleController extends Controller
 
 
         return redirect()->route('roles.index')->with('success', 'Role deleted and users reassigned successfully.');
+    }
+
+    protected function expandRouteRelations(array $selectedRoutes, array $authenticatedRoutes): array
+    {
+        foreach ($selectedRoutes as $route) {
+            [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
+
+            match (true) {
+                $module == 'settings' && $action == 'index' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, 'password.confirm'),
+                $action == 'create' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.store"),
+                $action == 'edit' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.update"),
+                $action == 'destroy' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.bulk-delete", ...($module == 'roles' ? ["$module.update-user-role"] : [])),
+                default => null
+            };
+        }
+
+        return [array_unique($selectedRoutes), array_unique($authenticatedRoutes)];
+    }
+
+    protected function pushRoutes(array &$selected, array &$auth, string ...$routes): void
+    {
+        foreach ($routes as $route) {
+            $selected[] = $route;
+            $auth[] = $route;
+        }
     }
 }

@@ -34,6 +34,15 @@ class CheckRoleAccess
             }
         }
 
+
+        $excludedRoutes = [
+            'users.edit'
+        ];
+
+        if (in_array($currentRouteName, $excludedRoutes)) {
+            return $next($request);
+        }
+
         if (!$user->canAccess($currentRouteName)) {
             abort(403, 'Unauthorized access.');
         }

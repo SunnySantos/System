@@ -31,15 +31,15 @@
         {{ $module }} Module
     </div>
     <ul class="list-none mb-4 flex gap-4 flex-wrap">
-        @foreach ($authenticatedRoutes as $route => $details)
-        @if ($details['module'] === $module)
-        <li {{ $details['can_access'] ? '' : 'class=opacity-25' }}>
-            @if ($details['can_access'])
+        @foreach ($authenticatedRoutes as $route => $value)
+        @if ($value['module'] === $module && array_key_exists($value['action'], App\Models\Role::ROUTE_ACTIONS))
+        <li {{ $value['can_access'] ? '' : 'class=opacity-25' }}>
+            @if ($value['can_access'])
             <x-lucide-circle-check class="inline-block mb-1 text-green-500" />
             @else
             <x-lucide-circle-x class="inline-block mb-1 text-red-500" />
             @endif
-            <span>{{ $details['label'] }}</span>
+            <span>{{ $value['label'] }}</span>
         </li>
         @endif
         @endforeach
