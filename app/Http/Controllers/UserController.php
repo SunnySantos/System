@@ -10,6 +10,7 @@ use App\Models\Country;
 use App\Models\State;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -45,7 +46,9 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         try {
-            $this->userService->createWithProfile($request->validated());
+            $user = $this->userService->createWithProfile($request->validated());
+
+            event(new Registered($user));
 
             return redirect()
                 ->route('users.index')

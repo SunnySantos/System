@@ -4,25 +4,16 @@
     </div>
     <ul class="menu menu-vertical p-0 w-full grow">
         @if(Auth::user()->canAccess('dashboard.index'))
-        <li><a href="{{ route('dashboard.index') }}"><x-lucide-layout-dashboard /> Dashboard</a></li>
+            <li><a href="{{ route('dashboard.index') }}"><x-lucide-layout-dashboard /> Dashboard</a></li>
         @endif
         @if(Auth::user()->canAccess('users.index'))
-        <li><a href="{{ route('users.index') }}"><x-lucide-users-round /> Users</a></li>
+            <li><a href="{{ route('users.index') }}"><x-lucide-users-round /> Users</a></li>
         @endif
         @if(Auth::user()->canAccess('roles.index'))
-        <li><a href="{{ route('roles.index') }}"><x-lucide-user-round-cog /> Roles</a></li>
+            <li><a href="{{ route('roles.index') }}"><x-lucide-user-round-cog /> Roles</a></li>
         @endif
         @if(Auth::user()->canAccess('settings.index'))
-        <li><a href="{{ route('settings.index') }}"><x-lucide-settings /> Settings</a></li>
+            <li><a href="{{ route('settings.index') }}"><x-lucide-settings /> Settings</a></li>
         @endif
-        <li class="mt-auto">
-            <a href="#" onclick='event.preventDefault(); document.getElementById("logout_form").submit();'><x-lucide-log-out /> Logout</a>
-            <form action="{{ route('logout') }}" method="POST" class="hidden" id="logout_form">
-                @csrf
-                <button type="submit" class="cursor-pointer">
-                    Logout
-                </button>
-            </form>
-        </li>
     </ul>
 </aside>

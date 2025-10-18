@@ -14,7 +14,7 @@
     <div class="flex gap-4 items-center">
         <div class="avatar">
             <div class="w-24 rounded">
-                <img src="{{ asset('storage/profile_pictures/' . $user->profile->file_base_name . $user->profile->file_extension) }}" alt="{{ $user->name }} Avatar" />
+                <img src="{{ asset('storage/profile_pictures/' . $user->file_base_name . $user->file_extension) }}" alt="{{ $user->name }} Avatar" />
             </div>
         </div>
         <div>
@@ -38,7 +38,7 @@
 </div>
 
 <div class="divider divider-start">Personal Information</div>
-<div class="flex items-center gap-2"><x-lucide-phone /> {{ $user->profile->phone }}</div>
+<div class="flex items-center gap-2"><x-lucide-phone /> {{ $user->profile->phone ?? '-' }}</div>
 
 <div class="divider divider-start mt-8">Address Information</div>
 <div class="flex items-center gap-2"><x-lucide-map-pin /> {{ $user->profile->street_address }}, {{ $user->profile->city }}, {{ $user->profile->state }} {{ $user->profile->zip }}, {{ $user->profile->country }}</div>

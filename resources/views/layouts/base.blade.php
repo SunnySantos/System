@@ -28,37 +28,6 @@
         @stack('styles')
     </head>
     <body class="flex min-h-screen">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            Log in
-                        </a>
-
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
-                        @endif
-                    @endauth
-                </nav>
-            @endif
-        </header>
-
-
         <div class="drawer lg:drawer-open">
             <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
 
@@ -77,7 +46,7 @@
                     
 
                     <!-- Dark mode toggle -->
-                    <label class="swap swap-rotate ms-auto">
+                    <label class="swap swap-rotate ms-auto me-4">
                         <input type="checkbox" id="theme_controller" class="theme-controller" value="dark" />
                         <!-- sun -->
                         <x-lucide-sun class="swap-off fill-current" />
@@ -87,7 +56,35 @@
                     </label>
 
                     @auth
-                        <span class="ms-4 text-sm text-gray-500 dark:text-gray-400">Hello, {{ Auth::user()->name }}</span>
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                <div class="w-10 rounded-full">
+                                    <img
+                                        alt="Tailwind CSS Navbar component"
+                                        src="{{ asset('storage/profile_pictures/' . Auth::user()->file_base_name . Auth::user()->file_extension) }}" />
+                                </div>
+                            </div>
+                            <ul
+                                tabindex="-1"
+                                class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+                                <li>
+                                    <a class="justify-between">
+                                        Profile
+                                        <span class="badge">New</span>
+                                    </a>
+                                </li>
+                                <li><a>Settings</a></li>
+                                <li>
+                                    <a href="#" onclick='event.preventDefault(); document.getElementById("logout_form").submit();'>Logout</a>
+                                    <form action="{{ route('logout') }}" method="POST" class="hidden" id="logout_form">
+                                        @csrf
+                                        <button type="submit" class="cursor-pointer">
+                                            Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     @endauth
                 </div>
 
@@ -105,6 +102,9 @@
                 <x-sidebar />
             </div>
         </div>
+
+
+        
 
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>

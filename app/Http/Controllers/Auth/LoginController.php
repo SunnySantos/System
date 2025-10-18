@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,12 +10,12 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function index(): View
+    public function showLoginForm(): View
     {
         return view('auth.login');
     }
 
-    public function authenticate(Request $request): RedirectResponse
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->only('email', 'password');
         $remember = $request->boolean('remember');
@@ -37,6 +38,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login.index');
+        return redirect('/login');
     }
 }

@@ -253,7 +253,7 @@
     const deleteRoleModal = document.getElementById('delete_role_modal');
 
     if (deleteRoleModal) {
-        if(deleteRoleModal.querySelector('.error')) {
+        if (deleteRoleModal.querySelector('.error')) {
             deleteRoleModal.showModal();
         }
 

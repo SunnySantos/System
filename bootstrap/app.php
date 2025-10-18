@@ -18,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectUsersTo('/dashboard');
 
-        $middleware->appendToGroup('auth', [
-            // CheckRoleAccess::class,
-        ]);
+        // $middleware->appendToGroup('auth', [
+        //     CheckRoleAccess::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
