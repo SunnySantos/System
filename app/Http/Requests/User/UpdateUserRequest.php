@@ -50,7 +50,7 @@ class UpdateUserRequest extends FormRequest
             ],
             'zip'               => ['required', 'string', 'max:20'],
             'email'             => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user->id)],
-            'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
+            // 'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
             'role'              => ['required', 'exists:roles,id'],
             'profile'           => [
                 'nullable',

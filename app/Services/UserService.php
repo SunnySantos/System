@@ -50,9 +50,9 @@ class UserService
             $user->email = $data['email'];
             $user->role_id = $data['role'];
 
-            if (!empty($data['password'])) {
-                $user->password = bcrypt($data['password']);
-            }
+            // if (!empty($data['password'])) {
+            //     $user->password = bcrypt($data['password']);
+            // }
 
             if (isset($data['file_base_name']) && isset($data['file_extension'])) {
                 $user->file_base_name = $data['file_base_name'];

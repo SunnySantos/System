@@ -2,5 +2,5 @@
     {{-- Icon --}}
     <x-dynamic-component :component="$icon()"/>
     {{-- Message --}}
-    <span>{{ $message }}</span>
+    <span>{!! $message !!}</span>
 </div>

@@ -45,7 +45,14 @@
 
 <div class="divider divider-start mt-8">Account Information</div>
 <div class="flex items-center gap-2 mb-2"><x-lucide-mail /> {{ $user->email }}</div>
-<div class="flex items-center gap-2"><x-lucide-circle-user-round /> <span class="badge badge-soft badge-success">Active</span></div>
+<div class="flex items-center gap-2 mb-4"><x-lucide-circle-user-round /> <span class="badge badge-soft {{ $user->status->color() }}">{{ $user->status->label() }}</span></div>
+
+<form method="POST" action="{{ route('password.email') }}">
+    @csrf
+    <input type="hidden" id="email" name="email" value="{{ $user->email }}">
+    <button type="submit" class="btn btn-soft btn-primary"><x-lucide-send /> Send Password Reset Link</button>
+</form>
+
 
 
 

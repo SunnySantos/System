@@ -17,7 +17,7 @@
 </a>
 @endif
 
-<div class="flex">
+<div class="flex gap-4">
     @if (Auth::user()->canAccess('users.destroy'))
     <x-bulk-delete-form singular="user" plural="users" route="users.bulk-delete" />
     @endif
@@ -80,7 +80,7 @@
                     </a>
                 </td>
                 <td>
-                    <span class="badge badge-soft badge-success">Active</span>
+                    <span class="badge badge-soft {{ $user->status->color() }}">{{ $user->status->label() }}</span>
                 </td>
                 @if (Auth::user()->canAccess('users.show') || Auth::user()->canAccess('users.destroy'))
                 <th>

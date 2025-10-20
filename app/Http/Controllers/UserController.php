@@ -7,12 +7,14 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Role;
 use App\Models\State;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -26,7 +28,14 @@ class UserController extends Controller
 
     public function index(Request $request): View
     {
-        $users = User::search($request)->paginate(5)->withQueryString();
+        $user = Auth::user();
+        $roleId = $user->role_id;
+
+        if ($roleId == Role::SUPER_ADMIN_ID) {
+            $users = User::search($request)->paginate(5)->withQueryString();
+        } else {
+            $users = User::search($request)->where('role_id', '!=', Role::SUPER_ADMIN_ID)->paginate(5)->withQueryString();
+        }
 
         return view('users.index', compact('users', 'request'));
     }

@@ -8,11 +8,6 @@
         width: 3rem;
     }
 
-    /* .item {
-        width: 100%;
-    } */
-
-
     [data-theme="dark"] .ts-control,
     [data-theme="dark"] .ts-wrapper.single.input-active .ts-control,
     [data-theme="dark"] .ts-dropdown {

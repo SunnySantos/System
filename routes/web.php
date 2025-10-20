@@ -26,7 +26,7 @@ Route::get('/', function () {
 Auth::routes([
     'verify' => true,
     'register' => false,
-    'reset' => false,
+    // 'reset' => false,
 ]);
 
 Route::middleware(['auth', 'verified'])->group(function () {

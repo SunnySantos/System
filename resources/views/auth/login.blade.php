@@ -11,6 +11,10 @@
                     <img src="{{ Vite::image('logo.svg') }}" alt="Logo" class="mx-auto">
                 </div>
 
+                @if (session('status'))
+                <x-alert type="success" message="{{ session('status') }}" />
+                @endif
+
                 <div class="mb-4">
                     <label class="label block w-fit" for="email">Email</label>
                     <input type="email" id="email" name="email" class="input w-full" value="{{ old('email') }}" placeholder="Email">
@@ -39,7 +43,7 @@
                         <input type="checkbox" id="remember" name="remember" class="checkbox checkbox-sm me-2 mb-1">
                         <label for="remember" class="cursor-pointer select-none">Remember me</label>
                     </div>
-                    <a class="link link-hover">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" class="link link-hover">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-soft btn-primary w-full"><x-lucide-log-in /> Login</button>

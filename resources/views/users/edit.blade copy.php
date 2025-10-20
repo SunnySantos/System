@@ -135,6 +135,22 @@
     </div>
 
     <div class="mb-4">
+        <label class="label block w-fit" for="password">Password</label>
+        <input type="password" id="password" class="input w-full" name="password" placeholder="Password">
+        @error('password')
+        <div class="text-red-500 dark:text-red-400">{{ $message }}</div>
+        @endif
+    </div>
+
+    <div class="mb-4">
+        <label class="label block w-fit" for="password_confirmation">Confirm Password</label>
+        <input type="password" id="password_confirmation" class="input w-full" name="password_confirmation" placeholder="Confirm Password">
+        @error('password_confirmation')
+        <div class="text-red-500 dark:text-red-400">{{ $message }}</div>
+        @endif
+    </div>
+
+    <div class="mb-4">
         <label class="label block w-fit" for="role">Role <span class="text-red-500">*</span></label>
         <select class="w-full tom-select" id="role" name="role" autocomplete="off">
             <option value="">Select Role</option>

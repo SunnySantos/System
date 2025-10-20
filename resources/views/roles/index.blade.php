@@ -17,7 +17,7 @@
 </a>
 @endif
 
-<div class="flex">
+<div class="flex gap-4">
     @if (Auth::user()->canAccess('roles.destroy'))
     <x-bulk-delete-form singular="user" plural="roles" route="roles.bulk-delete" />
     @endif
