@@ -181,7 +181,7 @@ class RoleService
             ]);
 
             // Delete the old role
-            Role::where('id', $oldRoleId)->delete();
+            Role::deleteMany([$oldRoleId]);
         });
     }
 
