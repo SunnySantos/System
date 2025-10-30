@@ -6,6 +6,10 @@
 
 @section('content')
 
+@if (session('success'))
+<x-alert type="success" message="{{ session('success') }}" />
+@endif
+
 <div class="flex items-center justify-end mt-4 mb-8">
     <div class="flex gap-4">
         @if(Auth::user()->canAccess('roles.edit'))

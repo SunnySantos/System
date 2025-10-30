@@ -17,9 +17,8 @@ class CheckRoleAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-
         if (!Auth::check()) {
-            return redirect()->route('login.index');
+            return redirect()->route('login');
         }
 
         $user = Auth::user();
@@ -32,15 +31,6 @@ class CheckRoleAccess
             if ($user->role_id != 1 && $roleId == 1) {
                 return redirect()->route('roles.index');
             }
-        }
-
-
-        $excludedRoutes = [
-            'users.edit'
-        ];
-
-        if (in_array($currentRouteName, $excludedRoutes)) {
-            return $next($request);
         }
 
         if (!$user->canAccess($currentRouteName)) {

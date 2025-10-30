@@ -41,7 +41,7 @@
 <div class="flex items-center gap-2"><x-lucide-phone /> {{ $user->profile->phone ?? '-' }}</div>
 
 <div class="divider divider-start mt-8">Address Information</div>
-<div class="flex items-center gap-2"><x-lucide-map-pin /> {{ $user->profile->street_address }}, {{ $user->profile->city }}, {{ $user->profile->state }} {{ $user->profile->zip }}, {{ $user->profile->country }}</div>
+<div class="flex items-center gap-2"><x-lucide-map-pin /> {{ $user->getFullAddressAttribute() }}</div>
 
 <div class="divider divider-start mt-8">Account Information</div>
 <div class="flex items-center gap-2 mb-2"><x-lucide-mail /> {{ $user->email }}</div>

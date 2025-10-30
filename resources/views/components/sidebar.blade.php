@@ -12,6 +12,9 @@
         @if(Auth::user()->canAccess('roles.index'))
             <li><a href="{{ route('roles.index') }}"><x-lucide-user-round-cog /> Roles</a></li>
         @endif
+        @if(Auth::user()->canAccess('audit.index'))
+            <li><a href="{{ route('audit.index') }}"><x-lucide-file-clock /> Logs</a></li>
+        @endif
         @if(Auth::user()->canAccess('settings.index'))
             <li><a href="{{ route('settings.index') }}"><x-lucide-settings /> Settings</a></li>
         @endif

@@ -4,6 +4,7 @@ namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
@@ -50,7 +51,17 @@ class UpdateUserRequest extends FormRequest
             ],
             'zip'               => ['required', 'string', 'max:20'],
             'email'             => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user->id)],
-            // 'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
+            'old_password'      => [
+                'nullable',
+                'string',
+                'min:8',
+                function ($attribute, $value, $fail) {
+                    if (! Hash::check($value, Auth::user()->password)) {
+                        $fail('The old password is incorrect.');
+                    }
+                },
+            ],
+            'password'          => ['nullable', 'string', 'min:8', 'confirmed'],
             'role'              => ['required', 'exists:roles,id'],
             'profile'           => [
                 'nullable',
@@ -65,19 +76,19 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'country.required'  => 'Please select a country.',
-            'country.exists'    => 'The selected country does not exist.',
+            'country.required'      => 'Please select a country.',
+            'country.exists'        => 'The selected country does not exist.',
 
-            'state.required'    => 'Please select a state.',
-            'state.exists'      => 'The selected state is invalid or does not belong to the chosen country.',
+            'state.required'        => 'Please select a state.',
+            'state.exists'          => 'The selected state is invalid or does not belong to the chosen country.',
 
-            'city.required'     => 'Please select a city.',
-            'city.exists'       => 'The selected city is invalid or does not belong to the chosen state.',
+            'city.required'         => 'Please select a city.',
+            'city.exists'           => 'The selected city is invalid or does not belong to the chosen state.',
 
-            'profile.image' => 'The profile picture must be an image file.',
-            'profile.mimes' => 'Only JPG and PNG images are allowed.',
-            'profile.max'   => 'The profile picture may not be larger than 2MB.',
-            'profile.dimensions' => 'The image dimensions must be between 100x100 and 2000x2000 pixels.',
+            'profile.image'         => 'The profile picture must be an image file.',
+            'profile.mimes'         => 'Only JPG and PNG images are allowed.',
+            'profile.max'           => 'The profile picture may not be larger than 2MB.',
+            'profile.dimensions'    => 'The image dimensions must be between 100x100 and 2000x2000 pixels.',
         ];
     }
 }

@@ -27,7 +27,7 @@
                     <label class="label block w-fit" for="password">Password</label>
                     <div class="relative">
                         <input type="password" id="password" class="input w-full" name="password" placeholder="Password">
-                        <label class="swap absolute top-[10px] right-[12px]">
+                        <label class="swap absolute top-[10px] right-[12px] z-10">
                             <input type="checkbox" id="show_hide_password" />
                             <x-lucide-eye-off class="swap-on" />
                             <x-lucide-eye class="swap-off" />
@@ -56,13 +56,11 @@
 
 @push('scripts')
 <script>
-    const showHidePassword = document.getElementById('show_hide_password');
-    const passwordField = document.getElementById('password');
-
-    if (showHidePassword && passwordField) {
-        showHidePassword.addEventListener('change', function(e) {
-            passwordField.type = e.target.checked ? 'text' : 'password';
-        });
-    }
+    window.addEventListener('load', function() {
+        window.showHidePassword([{
+            fieldId: 'password',
+            toggleId: 'show_hide_password'
+        }])
+    });
 </script>
 @endpush

@@ -267,5 +267,22 @@
             })
         })
     }
+
+
+    window.addEventListener('load', function() {
+        window.showHidePassword([{
+                fieldId: 'old_password',
+                toggleId: 'show_hide_old_password'
+            },
+            {
+                fieldId: 'password',
+                toggleId: 'show_hide_password'
+            },
+            {
+                fieldId: 'password_confirmation',
+                toggleId: 'show_hide_password_confirmation'
+            }
+        ])
+    });
 </script>
 @endpush

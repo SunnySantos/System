@@ -15,6 +15,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -130,9 +131,40 @@ class UserController extends Controller
         $ids = explode(',', $request->ids);
         $singular = 'user';
         $plural = 'users';
+        $chunkSize = 100;
 
-        User::whereIn('id', $ids)->delete();
+        User::whereIn('id', $ids)
+            ->chunkById($chunkSize, function ($models) {
+                foreach ($models as $model) {
+                    $model->delete();
+                }
+            });
 
         return back()->with('success', 'Selected ' . (sizeof($ids) > 1 ? $plural : $singular) . ' deleted successfully!');
+    }
+
+    public function profile(User $user): View
+    {
+        if (Auth::user() != $user) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $country = null;
+        $state = null;
+        $city = null;
+
+        if ($user->profile && $user->profile->country) {
+            $country = Country::where('name', $user->profile->country)->first(['id', 'name']);
+        }
+
+        if ($user->profile && $user->profile->state) {
+            $state = State::where('name', $user->profile->state)->first(['id', 'name']);
+        }
+
+        if ($user->profile && $user->profile->city) {
+            $city = City::where('name', $user->profile->city)->first(['id', 'name']);
+        }
+
+        return view('users.profile', compact('user', 'country', 'state', 'city'));
     }
 }

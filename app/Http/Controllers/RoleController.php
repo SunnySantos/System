@@ -7,30 +7,27 @@ use App\Http\Requests\Role\StoreRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Http\Requests\Role\UpdateUserRoleAfterDeleteRequest;
 use App\Models\Role;
-use App\Models\User;
+use App\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
 class RoleController extends Controller
 {
+    protected RoleService $roleService;
+
+    public function __construct(RoleService $roleService)
+    {
+        $this->roleService = $roleService;
+    }
+
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request): View
     {
-        $user = Auth::user();
-        $roleId = $user->role_id;
-
-        if ($roleId == Role::SUPER_ADMIN_ID) {
-            $roles = Role::search($request)->withCount('users')->paginate(5)->withQueryString();
-        } else {
-            $roles = Role::search($request)->where('id', '!=', Role::SUPER_ADMIN_ID)->withCount('users')->paginate(5)->withQueryString();
-        }
+        $roles = $this->roleService->getPaginatedRole($request);
 
         return view('roles.index', compact('roles', 'request'));
     }
@@ -40,40 +37,10 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $authenticatedRoutes = collect(Route::getRoutes())
-            ->filter(fn($route) => in_array('auth', $route->gatherMiddleware())) // only routes that require authentication
-            ->mapWithKeys(function ($route) {
-                $name = $route->getName();
-
-                if (!$name) {
-                    return [];
-                }
-
-                $parts = explode('.', $name);
-                [$module, $action] = array_pad($parts, 2, null);
-
-                // Validate module and action
-                if (!in_array($module, Role::MODULES) || !in_array($action, array_keys(Role::ROUTE_ACTIONS))) {
-                    return [];
-                }
-
-                return [
-                    $name => [
-                        'label' => Role::ROUTE_ACTIONS[$action] . " " . ucfirst($module),
-                        'module' => $module,
-                        'can_access' => false,
-                    ]
-                ];
-            })
-            ->filter() // remove null route names
-            ->all();
-
         return view('roles.create', [
             'modules' => Role::MODULES,
-            'authenticatedRoutes' => $authenticatedRoutes,
+            'authenticatedRoutes' => $this->roleService->getAuthenticatedRoutes(),
         ]);
-
-        return view('roles.create');
     }
 
     /**
@@ -81,29 +48,9 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        $role = $this->roleService->createRoleWithAccesses($request->validated());
 
-        $role = Role::create([
-            'name' => $validated['name'],
-        ]);
-
-        /* 
-        *   Get selected routes from form (checked checkboxes)
-        *   Get all authenticated routes
-        */
-        [$selectedRoutes, $authenticatedRoutes] = $this->expandRouteRelations($validated['role_accesses'] ?? [], Role::getAuthenticatedRoutes());
-
-        // Bulk insert for efficiency
-        $role->accesses()->createMany(
-            collect($authenticatedRoutes)->map(function ($route) use ($selectedRoutes) {
-                return [
-                    'route_name' => $route,
-                    'can_access' => in_array($route, $selectedRoutes, true),
-                ];
-            })->toArray()
-        );
-
-        return redirect()->route('roles.index')->with('success', 'Role created successfully!');
+        return redirect()->route('roles.index')->with('success', "Role '{$role->name}' created successfully!");
     }
 
     /**
@@ -139,55 +86,9 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        $validated = $request->validated();
+        $role = $this->roleService->updateRoleWithAccesses($role, $request->validated());
 
-        // Update role name
-        $role->update([
-            'name' => $validated['name'],
-        ]);
-
-        /* 
-        *   Get selected routes from form (checked checkboxes)
-        *   Get all authenticated routes
-        */
-        [$selectedRoutes, $authenticatedRoutes] = $this->expandRouteRelations($validated['role_accesses'] ?? [], Role::getAuthenticatedRoutes());
-
-        // Get existing accesses from database
-        $existingAccesses = $role->accesses()->pluck('can_access', 'route_name');
-
-        // Start a transaction to ensure atomic updates
-        DB::transaction(function () use ($role, $authenticatedRoutes, $selectedRoutes, $existingAccesses) {
-            // STEP 1: Add or update each valid route
-            foreach ($authenticatedRoutes as $route) {
-                $canAccess = in_array($route, $selectedRoutes, true);
-
-                if ($existingAccesses->has($route)) {
-                    // Update only if something changed
-                    if ($existingAccesses[$route] !== $canAccess) {
-                        $role->accesses()
-                            ->where('route_name', $route)
-                            ->update(['can_access' => $canAccess]);
-                    }
-                } else {
-                    // Create new route access entry
-                    $role->accesses()->create([
-                        'route_name' => $route,
-                        'can_access' => $canAccess,
-                    ]);
-                }
-            }
-
-            // STEP 2: Remove routes that no longer exist in your app
-            $toDelete = $existingAccesses->keys()->diff($authenticatedRoutes);
-            if ($toDelete->isNotEmpty()) {
-                $role->accesses()->whereIn('route_name', $toDelete)->delete();
-            }
-
-            Role::clearAuthenticatedRoutesCache();
-        });
-
-
-        return redirect()->route('roles.show', $role->id)->with('success', 'Role updated successfully!');
+        return redirect()->route('roles.show', $role->id)->with('success', "Role '{$role->name}' updated successfully!");
     }
 
     /**
@@ -197,64 +98,28 @@ class RoleController extends Controller
     {
         $role->delete();
 
-        return redirect()->route('roles.index')->with('success', 'Role deleted successfully!');
+        return redirect()->route('roles.index')->with('success', "Role '{$role->name}' deleted successfully!");
     }
 
 
     public function bulkDelete(BulkDeleteRoleRequest $request): RedirectResponse
     {
         $ids = explode(',', $request->ids);
-        $singular = 'role';
-        $plural = 'roles';
 
-        Role::whereIn('id', $ids)->delete();
+        $this->roleService->bulkDelete($ids);
 
-        return back()->with('success', 'Selected ' . (sizeof($ids) > 1 ? $plural : $singular) . ' deleted successfully!');
+        return back()->with('success', 'Selected ' . (count($ids) > 1 ? 'roles' : 'role') . ' deleted successfully!');
     }
 
     public function updateUserRoleAfterDelete(UpdateUserRoleAfterDeleteRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
-        $oldRoleId = $validated['role_id'];
-        $newRoleId = $validated['new_role_id'];
-
-        DB::transaction(function () use ($oldRoleId, $newRoleId) {
-            // Reassign all users with the old role
-            User::where('role_id', $oldRoleId)->update([
-                'role_id' => $newRoleId,
-            ]);
-
-            // Delete the old role
-            Role::where('id', $oldRoleId)->delete();
-        });
-
+        $this->roleService->updateUserRoleAfterDelete(
+            $validated['role_id'],
+            $validated['new_role_id']
+        );
 
         return redirect()->route('roles.index')->with('success', 'Role deleted and users reassigned successfully.');
-    }
-
-    protected function expandRouteRelations(array $selectedRoutes, array $authenticatedRoutes): array
-    {
-        foreach ($selectedRoutes as $route) {
-            [$module, $action] = array_pad(explode('.', $route, 2), 2, null);
-
-            match (true) {
-                $module == 'settings' && $action == 'index' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, 'password.confirm'),
-                $action == 'create' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.store"),
-                $action == 'edit' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.update"),
-                $action == 'destroy' => $this->pushRoutes($selectedRoutes, $authenticatedRoutes, "$module.bulk-delete", ...($module == 'roles' ? ["$module.update-user-role"] : [])),
-                default => null
-            };
-        }
-
-        return [array_unique($selectedRoutes), array_unique($authenticatedRoutes)];
-    }
-
-    protected function pushRoutes(array &$selected, array &$auth, string ...$routes): void
-    {
-        foreach ($routes as $route) {
-            $selected[] = $route;
-            $auth[] = $route;
-        }
     }
 }

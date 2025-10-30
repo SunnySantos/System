@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ConfirmPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationController;
@@ -33,7 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::delete('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
     Route::resource('users', UserController::class);
-    Route::get('/settings', [SettingsController::class, 'index'])->middleware(['password.confirm'])->name('settings.index');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 
     Route::get('/confirm-password', [ConfirmPasswordController::class, 'index'])->name('password.confirm');
 
@@ -41,8 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/roles/update-user-role', [RoleController::class, 'updateUserRoleAfterDelete'])->name('roles.update-user-role');
     Route::resource('roles', RoleController::class);
 
+    Route::get('/audit-trail', [AuditController::class, 'index'])->name('audit.index');
+
     Route::withoutMiddleware([CheckRoleAccess::class])->group(function () {
         // Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+        Route::get('/users/{user}/profile', [UserController::class, 'profile'])->middleware(['password.confirm'])->name('users.profile');
         Route::post('/confirm-password', [ConfirmPasswordController::class, 'confirm'])->middleware(['throttle:6,1']);
     });
 });

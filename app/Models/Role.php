@@ -5,16 +5,15 @@ namespace App\Models;
 use App\Traits\HasAuthenticatedRoutes;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
-class Role extends Model
+class Role extends BaseModel
 {
     /** @use HasFactory<\Database\Factories\RoleFactory> */
     use HasFactory, Searchable, HasAuthenticatedRoutes;
 
-    public const MODULES = ['dashboard', 'users', 'roles', 'settings'];
+    public const MODULES = ['dashboard', 'users', 'roles', 'settings', 'audit'];
     public const ROUTE_ACTIONS = [
         'index' => 'View All',
         'show' => 'View',
@@ -23,6 +22,9 @@ class Role extends Model
         'destroy' => 'Delete',
     ];
     public const SUPER_ADMIN_ID = 1;
+    protected const SEARCHABLE_COLUMNS = ['name'];
+    protected const ALLOWED_SORTS = ['id', 'name'];
+    protected const ALLOWED_SORT_DIRECTIONS = ['asc', 'desc'];
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,8 @@ class Role extends Model
     protected $fillable = [
         'name',
     ];
+
+    protected $model = 'Role';
 
     /**
      * A Role has many RoleAccess.

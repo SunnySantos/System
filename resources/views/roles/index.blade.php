@@ -37,7 +37,7 @@
                 </th>
                 @endif
                 <th width="90%">
-                    <x-sortable-column column="role" label="Role" />
+                    <x-sortable-column column="name" label="Role" />
                 </th>
                 <th>
                     User
@@ -112,7 +112,7 @@
                 </th>
                 @endif
                 <th width="90%">
-                    <x-sortable-column column="role" label="Role" />
+                    <x-sortable-column column="name" label="Role" />
                 </th>
                 <th>
                     Users

@@ -23,7 +23,7 @@ class BulkDeleteRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'ids' => ['required', 'string'],
         ];
     }
 }

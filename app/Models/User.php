@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\UserStatus;
+use App\Traits\Auditable;
 use App\Traits\Searchable;
 use Illuminate\Auth\Passwords\CanResetPassword as PasswordsCanResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -18,7 +19,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Searchable, PasswordsCanResetPassword;
+    use HasFactory, Notifiable, Searchable, PasswordsCanResetPassword, Auditable;
 
     protected const SEARCHABLE_COLUMNS = ['name', 'email'];
     protected const ALLOWED_SORTS = ['id', 'name', 'email'];
@@ -36,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
         'role_id',
         'last_login_at',
     ];
+
+    protected $model = 'User';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -103,5 +106,10 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
         }
 
         return in_array($routeName, $cachedAccesses[$roleId]);
+    }
+
+    public function getFullAddressAttribute()
+    {
+        return trim("{$this->profile->street_address}, {$this->profile->city}, {$this->profile->state} {$this->profile->zip}, {$this->profile->country}");
     }
 }

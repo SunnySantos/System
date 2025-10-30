@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RoleAccess extends Model
 {
     /** @use HasFactory<\Database\Factories\RoleAccessFactory> */
-    use HasFactory;
+    use HasFactory, Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +22,10 @@ class RoleAccess extends Model
         'route_name',
         'can_access',
     ];
+
+    protected $model = 'Role Access';
+
+    protected array $auditableRelations = ['accesses'];
 
     /**
      * A RoleAccess belongs to a Role.

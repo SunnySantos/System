@@ -31,7 +31,7 @@
                     <label class="label block w-fit" for="password">New Password</label>
                     <div class="relative">
                         <input id="password" type="password" name="password" class="input w-full">
-                        <label class="swap absolute top-[10px] right-[12px]">
+                        <label class="swap absolute top-[10px] right-[12px] z-10">
                             <input type="checkbox" id="show_hide_password" />
                             <x-lucide-eye-off class="swap-on" />
                             <x-lucide-eye class="swap-off" />
@@ -47,7 +47,7 @@
                     <label class="label block w-fit" for="password_confirmation">Confirm Password</label>
                     <div class="relative">
                         <input id="password_confirmation" type="password" name="password_confirmation" class="input w-full">
-                        <label class="swap absolute top-[10px] right-[12px]">
+                        <label class="swap absolute top-[10px] right-[12px] z-10">
                             <input type="checkbox" id="show_hide_password_confirmation" />
                             <x-lucide-eye-off class="swap-on" />
                             <x-lucide-eye class="swap-off" />
