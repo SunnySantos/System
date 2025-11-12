@@ -119,6 +119,7 @@ class RoleService
             // Get existing accesses from database
             $existingAccesses = $role->accesses()->pluck('can_access', 'route_name');
 
+
             // STEP 1: Add or update each valid route
             foreach ($authenticatedRoutes as $route) {
                 $canAccess = in_array($route, $selectedRoutes, true);
@@ -133,16 +134,16 @@ class RoleService
                     }
                 } else {
                     // Create new route access entry
-                    // $access = $role->accesses()->create([
-                    //     'route_name' => $route,
-                    //     'can_access' => $canAccess,
-                    // ]);
-
-                    RoleAccess::create([
-                        'role_id'       => $role->id,
-                        'route_name'    => $route,
-                        'can_access'    => $canAccess,
+                    $role->accesses()->create([
+                        'route_name' => $route,
+                        'can_access' => $canAccess,
                     ]);
+
+                    // RoleAccess::create([
+                    //     'role_id'       => $role->id,
+                    //     'route_name'    => $route,
+                    //     'can_access'    => $canAccess,
+                    // ]);
                 }
             }
 

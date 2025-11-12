@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class BaseModel extends Model
@@ -19,7 +20,7 @@ class BaseModel extends Model
     public static function deleteMany(array $ids, int $chunkSize = 100): void
     {
         static::whereIn('id', $ids)
-            ->chunkById($chunkSize, function ($models) {
+            ->chunkById($chunkSize, function (Collection $models) {
                 foreach ($models as $model) {
                     $model->delete();
                 }

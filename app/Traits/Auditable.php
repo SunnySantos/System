@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Audit;
 use App\Models\RoleAccess;
+use App\Models\UserProfile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
@@ -14,10 +15,15 @@ trait Auditable
     {
         Log::debug('BOOT AUDITABLE');
 
-        static::created(function ($model) {
+        $exludedClass = [
+            UserProfile::class,
+            RoleAccess::class,
+        ];
+
+        static::created(function ($model) use ($exludedClass) {
             // Log::debug('[CREATE]: ' . print_r($model, true));
 
-            if(static::class != RoleAccess::class) {
+            if (in_array(static::class, $exludedClass) === false) {
                 $model->createAudit('created');
             }
         });
@@ -45,9 +51,12 @@ trait Auditable
         //     Log::debug('[SAVED]: ' . print_r($model, true));
         // });
 
-        static::deleted(function ($model) {
+        static::deleted(function ($model) use ($exludedClass) {
             // Log::debug('[DELETE]: ' . print_r($model, true));
-            $model->createAudit('deleted');
+
+            if (in_array(static::class, $exludedClass) === false) {
+                $model->createAudit('deleted');
+            }
         });
     }
 
@@ -69,20 +78,6 @@ trait Auditable
             'message'           => sprintf('%s is %s.', $this->model, $event),
             'ip_address'        => Request::ip(),
         ];
-
-        // if ($event === 'created') {
-        //     $data['new_values'] = [
-        //         'message' => sprintf('New %s is created.', $this->model)
-        //     ];
-        // } elseif ($event === 'updated') {
-        //     $data['new_values'] = [
-        //         'message' => sprintf('%s is updated.', $this->model)
-        //     ];
-        // } elseif ($event === 'deleted') {
-        //     $data['new_values'] = [
-        //         'message' => sprintf('%s is deleted.', $this->model)
-        //     ];
-        // }
 
         Audit::create($data);
     }

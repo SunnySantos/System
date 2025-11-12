@@ -56,7 +56,7 @@ class Audit extends Model
 
         if (!is_null($this->attributes['changed_values'])) {
             foreach (json_decode($this->attributes['changed_values']) as $key => $value) {
-                if ($key != 'updated_at') {
+                if (!in_array($key, ['created_at', 'updated_at'])) {
                     $str[] .= '[' . $key . '] => ' . $value;
                 }
             }
@@ -65,13 +65,13 @@ class Audit extends Model
         return implode('&#9;', $str);
     }
 
-    public function getPreviousValuesAttribute()
+    public function getOldValuesAttribute()
     {
         $str = [];
 
         if (!is_null($this->attributes['old_values'])) {
             foreach (json_decode($this->attributes['old_values']) as $key => $value) {
-                if ($key != 'updated_at') {
+                if (!in_array($key, ['created_at', 'updated_at'])) {
                     $str[] .= '[' . $key . '] => ' . $value;
                 }
             }
@@ -81,16 +81,37 @@ class Audit extends Model
         return implode('&#9;', $str);
     }
 
-    public function getUpdatedValuesAttribute()
+    public function getNewValuesAttribute()
     {
         $str = [];
+
         if (!is_null($this->attributes['new_values'])) {
             foreach (json_decode($this->attributes['new_values']) as $key => $value) {
-                if ($key != 'updated_at') {
+                if (!in_array($key, ['created_at', 'updated_at'])) {
                     $str[] .= '[' . $key . '] => ' . $value;
                 }
             }
         }
         return implode('<br>', $str);
+    }
+
+    public function isLogin(): bool
+    {
+        return $this->event == 'login';
+    }
+
+    public function hasChangedValues(): bool
+    {
+        return !is_null($this->attributes['changed_values']);
+    }
+
+    public function hasOldValues(): bool
+    {
+        return !is_null($this->attributes['old_values']);
+    }
+
+    public function hasNewValues(): bool
+    {
+        return !is_null($this->attributes['new_values']);
     }
 }

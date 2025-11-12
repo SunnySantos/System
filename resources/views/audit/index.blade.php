@@ -22,6 +22,7 @@
                 <th>Event</th>
                 <th>Summary</th>
                 <th>IP Address</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -31,21 +32,17 @@
                 <td>{{ $log->created_at }}</td>
                 <td>{{ $log->user->name ?? '-' }}</td>
                 <td>{{ $log->event ?? '-' }}</td>
+                <td>{{ $log->message ?? '-' }}</td>
+                <td>{{ $log->ip_address ?? '-' }}</td>
                 <td>
-                    @if (in_array($log->event, ['login', 'logout', 'failed_login', 'created', 'deleted']))
-                    {{ $log->message }}
-                    @elseif ($log->event == 'updated')
-                    {{ $log->message }}
-                    <br>
-                    {{ $log->getChangedValuesAttribute() }}
-                    @else
-                    <p class="text-xs">Before</p>
-                    {!! json_encode($log->getPreviousValuesAttribute()) !!}
-                    <p class="text-xs mt-4">After</p>
-                    {!! json_encode($log->getUpdatedValuesAttribute()) !!}
+                    @if (Auth::user()->canAccess('audit.show'))
+                    <div class="tooltip tooltip-bottom" data-tip="View">
+                        <a href="{{ route('audit.show', $log->id) }}" class="text-[#297AFF] view-modal-btn" role="button">
+                            <x-lucide-eye />
+                        </a>
+                    </div>
                     @endif
                 </td>
-                <td>{{ $log->ip_address ?? '-' }}</td>
             </tr>
 
             @empty
@@ -64,6 +61,7 @@
                 <th>Event</th>
                 <th>Summary</th>
                 <th>IP Address</th>
+                <th>Action</th>
             </tr>
         </tfoot>
     </table>

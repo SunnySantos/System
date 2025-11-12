@@ -14,3 +14,8 @@
 .opacity-25 {
     opacity: 0.25;
 }
+
+.btn-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}

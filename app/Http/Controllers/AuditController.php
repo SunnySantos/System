@@ -14,4 +14,9 @@ class AuditController extends Controller
 
         return view('audit.index', compact('logs'));
     }
+
+    public function show(Audit $audit): View
+    {
+        return view('audit.show', compact('audit'));
+    }
 }

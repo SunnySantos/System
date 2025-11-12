@@ -7,10 +7,28 @@ use App\Models\UserProfile;
 use App\Models\City;
 use App\Models\State;
 use App\Models\Country;
+use App\Models\Role;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserService
 {
+    public function getPaginatedUser(Request $request): LengthAwarePaginator
+    {
+        $user = Auth::user();
+        $roleId = $user->role_id;
+
+        $query = User::search($request);
+
+        if ($roleId != Role::SUPER_ADMIN_ID) {
+            $users = $query->where('role_id', '!=', Role::SUPER_ADMIN_ID);
+        }
+
+        return $query->paginate(5)->withQueryString();
+    }
+
     public function createWithProfile(array $data): User
     {
         return DB::transaction(function () use ($data) {
@@ -83,6 +101,26 @@ class UserService
             );
 
             return $user;
+        });
+    }
+
+    /**
+     * Bulk delete multiple roles by their IDs.
+     *
+     * @param  array<int>  $ids
+     * @return int  Number of roles deleted
+     */
+    public function bulkDelete(array $ids): void
+    {
+        DB::transaction(function () use ($ids) {
+            $chunkSize = 100;
+
+            User::whereIn('id', $ids)
+                ->chunkById($chunkSize, function ($models) {
+                    foreach ($models as $model) {
+                        $model->delete();
+                    }
+                });
         });
     }
 }

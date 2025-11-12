@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('roles', RoleController::class);
 
     Route::get('/audit-trail', [AuditController::class, 'index'])->name('audit.index');
+    Route::get('/audit-trail/{audit}', [AuditController::class, 'show'])->name('audit.show');
 
     Route::withoutMiddleware([CheckRoleAccess::class])->group(function () {
         // Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

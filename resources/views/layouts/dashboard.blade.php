@@ -48,12 +48,20 @@
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 
 <script>
-    const api = 'http://localhost:8000/api';
+    const api = '{{ config('
+    app.api_url ') }}';
+
+    // Initialize TomSelect
+    document.querySelectorAll('.tom-select').forEach(select => {
+        new TomSelect(select);
+    })
 
     websiteTheme();
     dataTableCheckbox();
     bulkDeleteForm();
     geoDropdowns();
+    profileImage();
+    deleteRoleModal();
 
     function websiteTheme() {
         // Restore theme from localStorage
@@ -218,54 +226,51 @@
         });
     }
 
+    function profileImage() {
+        const profileEditButton = document.getElementById('profile_edit');
+        const profileInput = document.getElementById('profile')
+        if (profileEditButton && profileInput) {
+            profileEditButton.addEventListener('click', function() {
+                profileInput.click();
+            });
 
-    const profileEditButton = document.getElementById('profile_edit');
-    const profileInput = document.getElementById('profile')
-    if (profileEditButton && profileInput) {
-        profileEditButton.addEventListener('click', function() {
-            profileInput.click();
-        });
+            profileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
 
-        profileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profile_picture').src = e.target.result;
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('profile_picture').src = e.target.result;
+                    }
+                    reader.readAsDataURL(file)
                 }
-                reader.readAsDataURL(file)
-            }
-        });
+            });
+        }
     }
 
-    // Initialize TomSelect
-    document.querySelectorAll('.tom-select').forEach(select => {
-        new TomSelect(select);
-    })
+    function deleteRoleModal() {
+        const deleteRoleModal = document.getElementById('delete_role_modal');
 
+        if (deleteRoleModal) {
+            if (deleteRoleModal.querySelector('.error')) {
+                deleteRoleModal.showModal();
+            }
 
-    const deleteRoleModal = document.getElementById('delete_role_modal');
+            document.querySelectorAll('.delete-modal-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const {
+                        roleId
+                    } = btn.dataset;
 
-    if (deleteRoleModal) {
-        if (deleteRoleModal.querySelector('.error')) {
-            deleteRoleModal.showModal();
-        }
+                    const roleIdInput = document.getElementById('role_id');
 
-        document.querySelectorAll('.delete-modal-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const {
-                    roleId
-                } = btn.dataset;
-
-                const roleIdInput = document.getElementById('role_id');
-
-                if (roleIdInput) {
-                    roleIdInput.value = roleId;
-                    deleteRoleModal.showModal();
-                }
+                    if (roleIdInput) {
+                        roleIdInput.value = roleId;
+                        deleteRoleModal.showModal();
+                    }
+                })
             })
-        })
+        }
     }
 
 
@@ -283,6 +288,43 @@
                 toggleId: 'show_hide_password_confirmation'
             }
         ])
+    });
+
+
+    const viewModalBtns = document.querySelectorAll('.view-modal-btn');
+
+    viewModalBtns.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = link.getAttribute('href');
+
+            viewModalBtns.forEach(btn => btn.classList.add('btn-disabled'));
+
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const container = document.createElement('div');
+                    container.innerHTML = html;
+                    document.body.appendChild(container);
+                    const modal = container.querySelector('.modal');
+                    if (modal) {
+                        modal.showModal();
+
+                        viewModalBtns.forEach(btn => btn.classList.remove('btn-disabled'));
+
+                        modal.addEventListener('close', () => {
+                            container.remove();
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading modal content:', error);
+                });
+        });
     });
 </script>
 @endpush
